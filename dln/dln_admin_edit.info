@@ -1,0 +1,5 @@
+; $Id: dln_admin_edit.info, v 1.0.0.0 2014/09/04 10:30:00 JKurrle Exp $
+name = "Update DLN Administrator"
+description = "Update DLN Administrator"
+core = "7.x"
+package = "DLN"

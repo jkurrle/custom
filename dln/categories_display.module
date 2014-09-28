@@ -1,0 +1,89 @@
+<?php
+// $Id: categories_display.module Exp $
+
+/**
+ * Implementation of hook_block_info
+ */
+function categories_display_block_info() 
+  {
+  $blocks['categories_display']=array
+    (
+    'info' => t('Display DLN Categories'),
+    'weight' => 1,
+    );
+  return($blocks); 
+  } // end function categories_display_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function categories_display_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "categories_display":
+      $block['subject'] = t('Display DLN Categories');
+      $block['content'] = categories_display();
+      break;
+      
+    default:
+      $block['subject'] = t('Display DLN Categories');
+      $block['content'] = categories_display();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function categories_display_block_view($delta="")
+  
+/**
+ * function to return event details
+ */
+function categories_display()
+  {
+  $content = "";
+
+  $result=db_query("SELECT * FROM `dln_categories`");
+  //if there's no event data
+  if(count($result)==0) 
+    $content = "No records available.";
+  else // there's event data
+    {
+    
+    //Create array of results
+    $dataFields=array();
+    while($row = $result -> fetchAssoc())
+      {
+      extract($row);
+      $dataFields[]=array($cat_name,$cat_desc,$cat_id);
+      } 
+
+    //headers for the table
+    $headers = array('Category Name','Category Description','Edit?');
+
+    $content .= "<table border=\"1\">\r\n";
+    //writing the table header
+    $content .= "<tr>";
+    foreach($headers as $header)
+      {
+      $content .= "<th>$header</th>";
+      }
+    $content .= "</tr>\r\n";
+
+    // Now, add data fields
+    foreach($dataFields as $dataField)
+      {
+      $id=array_pop($dataField);
+      $content .= "<tr>";
+      foreach($dataField as $dataItem)
+        {
+        $content .= "<td>$dataItem</td>";
+        }
+      $content .= "<td><form method=\"post\" action=\"edit-category\"><input type=\"hidden\" name=\"id\" value=\"$id\" /><input type=\"submit\" value=\"Edit\" /></form></td>";
+    $content .= "</tr>\r\n";
+      }   
+
+    $content .= "</table>\r\n";
+    }// end else there's event data   
+  
+  return($content);
+  }//end function categories_display()

@@ -1,0 +1,150 @@
+<?php
+
+/**
+ * Implementation of hook_block_info
+ */
+function studio_block_info() 
+  {
+  $blocks['studio']=array
+    (
+    'info' => t('DLN Studio Info'),
+    'weight' => 1,
+    );
+  return($blocks); 
+  } // end function studio_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function studio_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "studio":
+      $block['subject'] = t('Add a DLN Studio');
+      $block['content'] = add_studio();
+      break;
+      
+    default:
+      $block['subject'] = t('Add a DLN Studio');
+      $block['content'] = add_studio();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function studio_block_view($delta="")
+  
+/**
+ * function to return studio form
+ */
+function add_studio() 
+  {
+  $content = drupal_get_form('studio_form');
+  return($content);
+  } // end function add_studio() 
+  
+/**
+ * implementation of hook_form
+ */
+function studio_form($form, &$form_state)
+  {
+  $form['description']=array
+    (
+    '#type' => 'item',
+    '#title' => t('Add your studio below. &nbsp;Items with an asterisk (*) are mandatory fields.'),
+    );
+  
+  $form['studioBlock'] = array
+    (
+    '#type' => 'fieldset',
+    '#title' => t('Studio Details'),
+    //'#collapsible' => TRUE,
+    //'#collapsed' => FALSE,
+    );
+  
+  $form['studioBlock']['studio_name'] = array
+    (
+    '#type' => 'textfield',
+    '#title' => t('Studio Name'),
+    '#required' => TRUE,
+    '#description' => t('Enter the name of the studio here'),
+    );
+  
+  $form['studioBlock']['studio_desc'] = array
+    (
+    '#type' => 'textfield',
+    '#title' => t('Studio Description'),
+    '#required' => TRUE,
+    '#description' => t('Enter the details of the studio here'),
+    );
+  
+  $optionsArray = array();
+  $results = db_query("SELECT * FROM dln_location");
+  while($row = $results -> fetchAssoc())
+    {
+    extract($row);
+    $optionsArray[$loc_id] = $loc_name;
+    }
+  $form['studioBlock']['studio_loc']=array
+    (
+    '#type' => 'select',
+    '#title' => t('Location of Studio'),
+    '#options' => $optionsArray,
+    '#description' => t('Select the location of the studio.'),
+    );
+  
+  $form['submit'] = array
+    (
+    '#type' => 'submit',
+    '#value' => t('Submit'), 
+    );
+  return($form);
+  }// end function studio_form($form, &$form_state)
+  
+/**
+ * implementation of hook_form_validate
+ */
+function studio_form_validate($form,&$form_state)
+  {
+  $title= $form['studioBlock']['studio_name']['#value'];
+  if(strlen($title)<2)
+    form_set_error('studio_title',t('Studio Name is too short.'));
+  
+  $description= $form['studioBlock']['studio_desc']['#value'];
+  if(strlen($description)<2)
+    form_set_error('studio_desc',t('Studio Description is too short.'));
+  
+  }//end function studio_form_validate($form,&$form_state)
+  
+/**
+ * Implementation of hook_form_submit
+ */
+function studio_form_submit($form, &$form_state)
+  {
+  
+  $name=check_plain($form['studioBlock']['studio_name']['#value']);
+  $desc=check_plain($form['studioBlock']['studio_desc']['#value']);
+  $loc=check_plain($form['studioBlock']['studio_loc']['#value']);
+
+  //insert into studios table
+  $result=db_insert('dln_studio')
+    ->fields(array(
+      'studio_name',
+      'studio_desc',
+      'loc_id',
+      'org_id',))
+    ->values(array(
+      'studio_name'=>$name,
+      'studio_desc'=>$desc,
+      'loc_id'=>$loc,
+      'org_id'=>1,
+      ))
+    ->execute();
+    
+  //get the last inserted id
+  $result=db_query("SELECT studio_id FROM dln_studio ORDER BY studio_id DESC LIMIT 1");
+  $row=$result->fetchAssoc();
+  extract($row);
+ 
+  drupal_set_message("Studio is added.");
+  }//end function studio_form_submit($form, &$form_state)

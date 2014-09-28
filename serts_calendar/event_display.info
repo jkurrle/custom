@@ -1,0 +1,5 @@
+; $Id: event_display.info, v 1.0.0.0 2012/01/24 8:30:00 JKurrle Exp $
+name = "Display Calendar Event Details"
+description = "Block to display calendar event details"
+core = "7.x"
+package = "SERTS"

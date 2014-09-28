@@ -1,0 +1,146 @@
+<?php
+
+/**
+ * Implementation of hook_block_info
+ */
+function location_edit_block_info() 
+  {
+  $blocks['location']=array
+    (
+    'info' => t('Edit DLN Location'),
+    'weight' => 1,
+    );
+  return($blocks); 
+  } // end function location_edit_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function location_edit_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "location":
+      $block['subject'] = t('Edit DLN Location');
+      $block['content'] = edit_location();
+      break;
+      
+    default:
+      $block['subject'] = t('Edit DLN Location');
+      $block['content'] = edit_location();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function location_edit_block_view($delta="")
+  
+/**
+ * function to return location form
+ */
+function edit_location() 
+  {
+  $content = drupal_get_form('location_edit_form');
+  return($content);
+  } // end function edit_location() 
+  
+/**
+ * implementation of hook_form
+ */
+function location_edit_form($form, &$form_state)
+  {
+  if(isset($_POST['id'])) $_SESSION['mydata'] = array((int)$_POST['id']);
+  $result = db_query("SELECT * FROM dln_location WHERE loc_id='".$_SESSION['mydata'][0]."'");
+  $row = $result -> fetchAssoc();
+  extract($row);  
+
+  $form['description']=array
+    (
+    '#type' => 'item',
+    '#title' => t('Edit the location below. &nbsp;Items with an asterisk (*) are mandatory fields.'),
+    );
+  
+  $form['locationBlock'] = array
+    (
+    '#type' => 'fieldset',
+    '#title' => t('Location Details'),
+    //'#collapsible' => TRUE,
+    //'#collapsed' => FALSE,
+    );
+  
+  $form['locationBlock']['loc_name'] = array
+    (
+    '#type' => 'textfield',
+    '#title' => t('Location Name'),
+    '#default_value' => $loc_name,
+    '#required' => TRUE,
+    '#description' => t('Enter the name of the location here'),
+    );
+  
+  $form['locationBlock']['loc_desc'] = array
+    (
+    '#type' => 'textarea',
+    '#title' => t('Location Description'),
+    '#default_value' => $loc_desc,
+    '#description' => t('Enter the details of this location.'),
+    '#required' => TRUE,
+    );
+  
+  $form['locationBlock']['boiler_acc']=array
+    (
+    '#type' => 'textarea',
+    '#title' => t('Acceptance Letter'),
+    '#default_value' => $boiler_acc,
+    '#description' => t('Enter the boilerplate acceptance email here.'),
+    );
+  
+  $form['locationBlock']['boiler_rej']=array
+    (
+    '#type' => 'textarea',
+    '#title' => t('Rejection Letter'),
+    '#default_value' => $boiler_rej,
+    '#description' => t('Enter the boilerplate rejection email here.'),
+    );
+  
+  $form['submit'] = array
+    (
+    '#type' => 'submit',
+    '#value' => t('Submit'), 
+    );
+  return($form);
+  }// end function location_edit_form($form, &$form_state)
+  
+/**
+ * implementation of hook_form_validate
+ */
+function location_edit_form_validate($form,&$form_state)
+  {
+  $name= check_plain($form['locationBlock']['loc_name']['#value']);
+  if(strlen($name)<2)
+    form_set_error('location_edit_title',t('Location Name is too short.'));
+  
+  $description= check_plain($form['locationBlock']['loc_desc']['#value']);
+  if(strlen($description)<2)
+    form_set_error('location_edit_desc',t('Location Description is too short.'));
+  
+  }//end function location_edit_form_validate($form,&$form_state)
+  
+/**
+ * Implementation of hook_form_submit
+ */
+function location_edit_form_submit($form, &$form_state)
+  {
+  $name=check_plain($form['locationBlock']['loc_name']['#value']);
+  $desc=check_plain($form['locationBlock']['loc_desc']['#value']);
+  $boilera=check_plain($form['locationBlock']['boiler_acc']['#value']);
+  $boilerr=check_plain($form['locationBlock']['boiler_rej']['#value']);
+  
+  //insert into locations table
+  $result=db_query("UPDATE dln_location SET
+      loc_name='$name',
+      loc_desc='$desc',
+      boiler_acc='$boilera',
+      boiler_rej='$boilerr',
+      org_id='1'
+      WHERE loc_id = '".$_SESSION['mydata'][0]."'");    
+  drupal_set_message("Location is edited.");
+  }//end function location_edit_form_submit($form, &$form_state)

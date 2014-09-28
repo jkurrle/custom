@@ -1,0 +1,5 @@
+; $Id: dln.info, v 1.0.0.0 2014/09/04 10:30:00 JKurrle Exp $
+name = "Digital Learning Network (DLN)"
+description = "Digital Learning Network Application"
+core = "7.x"
+package = "DLN"

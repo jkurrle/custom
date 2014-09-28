@@ -1,0 +1,262 @@
+<?php
+
+/**
+ * Implementation of hook_block_info
+ */
+function instructor_edit_block_info() 
+  {
+  $blocks['instructor_edit']=array
+    (
+    'info' => t('Edit DLN Instructor Info'),
+    'weight' => 1,
+    );
+  return($blocks); 
+  } // end function instructor_edit_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function instructor_edit_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "instructor_edit":
+      $block['subject'] = t('Edit a DLN Instructor');
+      $block['content'] = add_instructor_edit();
+      break;
+      
+    default:
+      $block['subject'] = t('Edit a DLN Instructor');
+      $block['content'] = add_instructor_edit();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function instructor_edit_block_view($delta="")
+  
+/**
+ * function to return instructor_edit form
+ */
+function add_instructor_edit() 
+  {
+  $content = drupal_get_form('instructor_edit_form');
+  return($content);
+  } // end function add_instructor_edit() 
+  
+/**
+ * implementation of hook_form
+ */
+function instructor_edit_form($form, &$form_state)
+  {
+  // get user ID
+  if(isset($_POST['id'])) $_SESSION['mydata']=array($_POST['id']);
+  //pull the record
+  $result = db_query("SELECT * FROM dln_instructor WHERE instr_id='".$_SESSION['mydata'][0]."'");
+  $row = $result -> fetchAssoc();
+  extract($row);
+
+  $form['description']=array
+    (
+    '#type' => 'item',
+    '#title' => t('Edit your entry below. &nbsp;Items with an asterisk (*) are mandatory fields.'),
+    );
+  
+  $form['instructor_editBlock'] = array
+    (
+    '#type' => 'fieldset',
+    '#title' => t('Instructor Details'),
+    //'#collapsible' => TRUE,
+    //'#collapsed' => FALSE,
+    );
+  
+  $form['instructor_editBlock']['instructor_name'] = array
+    (
+    '#type' => 'textfield',
+    '#title' => t('Instructor Name'),
+    '#default_value' => $instr_name,
+    '#required' => TRUE,
+    '#description' => t('Enter the name of the instructor here'),
+    );
+  
+  $form['instructor_editBlock']['instr_email'] = array
+    (
+    '#type' => 'textfield',
+    '#title' => t('Instructor Email'),
+    '#default_value' => $instr_email,
+    '#required' => TRUE,
+    '#description' => t('Enter the email of the instructor'),
+    );
+  
+  $hourArray = array
+    (
+    '5' => '5am',
+    '6' => '6am',
+    '7' => '7am',
+    '8' => '8am',
+    '9' => '9am',
+    '10' => '10am',
+    '11' => '11am',
+    '12' => '12pm',
+    '13' => '1pm',
+    '14' => '2pm',
+    '15' => '3pm',
+    '16' => '4pm',
+    '17' => '5pm',
+    '18' => '6pm',
+    '19' => '7pm',
+    '20' => '8pm',
+    '21' => '9pm',
+    );
+
+  $form['instructor_editBlock']['start_hour_1'] = array
+    (
+    '#type' => 'select',
+    '#options' => $hourArray,
+    '#required' => TRUE,
+    '#default_value' => $start_time_1,
+    '#title' => t('Select the instructor\'s starting time '),
+    );
+
+  $form['instructor_editBlock']['end_hour_1'] = array
+    (
+    '#type' => 'select',
+    '#options' => $hourArray,
+    '#required' => TRUE,
+    '#default_value' => $end_time_1,
+    '#title' => t('Select the instructor\'s time of the afternoon break'),
+    );
+
+  $form['instructor_editBlock']['start_hour_2'] = array
+    (
+    '#type' => 'select',
+    '#options' => $hourArray,
+    '#required' => FALSE,
+    '#default_value' => $start_time_2,
+    '#title' => t('Select the instructor\'s returning time of the afternoon'),
+    );
+
+  $form['instructor_editBlock']['end_hour_2'] = array
+    (
+    '#type' => 'select',
+    '#options' => $hourArray,
+    '#required' => FALSE,
+    '#default_value' => $end_time_2,
+    '#title' => t('Select the instructor\'s ending time of the day'),
+    );
+
+  $optionsArray = array
+    (
+    '5' => 'EST/EDT',
+    '6' => 'CST/CDT',
+    '7' => 'MST/MDT',
+    '8' => 'PST/PDT',
+    );
+
+  $form['instructor_editBlock']['timezone'] = array
+    (
+    '#type' => 'select',
+    '#options' => $optionsArray,
+    '#title' => 'Time Zone of the Instructor',
+    '#default_value' => $time_zone,
+    '#title' => t('Select the instructor\'s time zone'),
+    '#required' => TRUE,
+    );
+
+  $optionsArray = array();
+  $results = db_query("SELECT * FROM dln_location");
+  while($row = $results -> fetchAssoc())
+    {
+    extract($row);
+    $optionsArray[$loc_id] = $loc_name;
+    }
+  $form['instructor_editBlock']['instructor_loc']=array
+    (
+    '#type' => 'select',
+    '#title' => t('Location of Instructor'),
+    '#options' => $optionsArray,
+    '#default_value' => $instr_loc,
+    '#description' => t('Select the location of the instructor.'),
+    );
+  
+  $optionsArray = array();
+  $results = db_query("SELECT * FROM dln_studio");
+  while($row = $results -> fetchAssoc())
+    {
+    extract($row);
+    $optionsArray[$studio_id] = $studio_name;
+    }
+  $form['instructor_editBlock']['instructor_studio']=array
+    (
+    '#type' => 'select',
+    '#title' => t('Studio of Instructor'),
+    '#options' => $optionsArray,
+    '#default_value' => $instr_studio,
+    '#description' => t('Select the studio of the instructor.'),
+    );
+  
+  $form['submit'] = array
+    (
+    '#type' => 'submit',
+    '#value' => t('Submit'), 
+    );
+  return($form);
+  }// end function instructor_edit_form($form, &$form_state)
+  
+/**
+ * implementation of hook_form_validate
+ */
+function instructor_edit_form_validate($form,&$form_state)
+  {
+  $title= $form['instructor_editBlock']['instructor_name']['#value'];
+  if(strlen($title)<2)
+    form_set_error('instructor_title',t('Instructor Name is too short.'));
+
+  $Email = check_plain($form['instructor_editBlock']['instr_email']['#value']);
+  if($Email != NULL)
+    {
+    $test1=explode("@",$Email);
+    if(count($test1) != 2) form_set_error('instr_email',t('Incorrect email format.'));
+    else
+      {
+      $test2=explode(".",$test1[1]);
+      if(count($test2) != 2) form_set_error('instr_email',t('Incorrect email format.'));
+      }
+    }
+  else
+    {
+    form_set_error('instructor_email', t('Instructor email is required.'));
+    }
+ 
+  }//end function instructor_edit_form_validate($form,&$form_state)
+  
+/**
+ * Implementation of hook_form_submit
+ */
+function instructor_edit_form_submit($form, &$form_state)
+  {
+  $name=check_plain($form['instructor_editBlock']['instructor_name']['#value']);
+  $email=check_plain($form['instructor_editBlock']['instr_email']['#value']);
+  $loc=$form['instructor_editBlock']['instructor_loc']['#value'];
+  $studio=$form['instructor_editBlock']['instructor_studio']['#value'];
+  $start_time_1=$form['instructor_editBlock']['start_hour_1']['#value'];
+  $end_time_1=$form['instructor_editBlock']['end_hour_1']['#value'];
+  $start_time_2=$form['instructor_editBlock']['start_hour_2']['#value'];
+  $end_time_2=$form['instructor_editBlock']['end_hour_2']['#value'];
+  $time_zone=$form['instructor_editBlock']['timezone']['#value'];
+
+  //insert into instructor_edits table
+  $result=db_query("UPDATE dln_instructor SET
+      instr_name = '$name',
+      instr_studio = '$studio',
+      instr_loc = '$loc',
+      instr_email = '$email',
+      org_id = '1',
+      start_time_1 = '$start_time_1',
+      end_time_1 = '$end_time_1', 
+      start_time_2 = '$start_time_2',
+      end_time_2 = '$end_time_2',
+      time_zone = '$time_zone' 
+      WHERE instr_id = '".$_SESSION['mydata'][0]."'");
+    
+  drupal_set_message("Instructor is updated.");
+  }//end function instructor_edit_form_submit($form, &$form_state)

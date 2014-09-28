@@ -1,0 +1,122 @@
+<?php
+
+/**
+ * Implementation of hook_block_info
+ */
+function instructor_course_block_info() 
+  {
+  $blocks['instructor_course']=array
+    (
+    'info' => t('DLN Instructor Course Assignment'),
+    'weight' => 1,
+    );
+  return($blocks); 
+  } // end function instructor_course_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function instructor_course_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "instructor":
+      $block['subject'] = t('Assign Instructor to Courses');
+      $block['content'] = assign_instructor();
+      break;
+      
+    default:
+      $block['subject'] = t('Assign Instructor to Courses');
+      $block['content'] = assign_instructor();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function instructor_course_block_view($delta="")
+  
+/**
+ * function to return instructor form
+ */
+function assign_instructor() 
+  {
+  $content = drupal_get_form('instructor_course_form');
+  return($content);
+  } // end function assign_instructor() 
+  
+/**
+ * implementation of hook_form
+ */
+function instructor_course_form($form, &$form_state)
+  {
+  if(isset($_POST['instr_ID'])) $_SESSION['instrID'] = (int)$_POST['instr_ID'];
+  $form['description']=array
+    (
+    '#type' => 'item',
+    '#title' => t('Assign courses to your instructor below.'),
+    );
+  
+  $form['instructorBlock'] = array
+    (
+    '#type' => 'fieldset',
+    '#title' => t('Instructor Courses'),
+    //'#collapsible' => TRUE,
+    //'#collapsed' => FALSE,
+    );
+  
+  $optionsArray=array();
+  $result=db_query("SELECT course_id,course_title FROM dln_course");
+  while($row=$result -> fetchAssoc())
+    {
+    extract($row);
+    $optionsArray[$course_id] = $course_title;
+    }
+
+  $checked = array();
+  $result2 = db_query("SELECT course_id FROM dln_instr_course WHERE instr_id='".$_SESSION['instrID']."'");
+  while($row2 = $result2 -> fetchAssoc())
+    {
+    extract($row2);
+    $checked[] = $course_id;
+    }
+
+  $form['instructorBlock']['instructor_course_name'] = array
+    (
+    '#type' => 'checkboxes',
+    '#options' => $optionsArray,
+    '#default_value' => $checked,
+    '#title' => t('Available Courses'),
+    '#description' => t('Assign the courses here'),
+    );
+  
+  $form['submit'] = array
+    (
+    '#type' => 'submit',
+    '#value' => t('Submit'), 
+    );
+  return($form);
+  }// end function instructor_course_form($form, &$form_state)
+  
+/**
+ * implementation of hook_form_validate
+ */
+function instructor_course_form_validate($form,&$form_state)
+  {
+  // nothing to do here... 
+  }//end function instructor_course_form_validate($form,&$form_state)
+  
+/**
+ * Implementation of hook_form_submit
+ */
+function instructor_course_form_submit($form, &$form_state)
+  {
+  $courses=$form['instructorBlock']['instructor_course_name']['#value'];
+ 
+  //clear out the old instructor values
+  $result = db_query("DELETE FROM dln_instr_course WHERE instr_ID='".$_SESSION['instrID']."'");
+  foreach($courses as $course)
+    {
+    db_query("INSERT INTO dln_instr_course (instr_id,course_id) VALUES ('".$_SESSION['instrID']."','$course')");
+    }
+
+  drupal_set_message("Courses are assigned.");
+  }//end function instructor_course_form_submit($form, &$form_state)

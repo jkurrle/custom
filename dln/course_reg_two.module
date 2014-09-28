@@ -1,0 +1,179 @@
+<?php
+
+/**
+ * Implementation of hook_block_info
+ */
+function course_reg_two_block_info() 
+  {
+  $blocks['course_reg_two']=array
+    (
+    'info' => t('Course Registration Part Two'),
+    'weight' => 1,
+    );
+  return($blocks); 
+  } // end function course_reg_two_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function course_reg_two_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "reg_two":
+      $block['subject'] = t('Course Registration Part Two');
+      $block['content'] = assign_reg_two();
+      break;
+      
+    default:
+      $block['subject'] = t('Course Registration Part Two');
+      $block['content'] = assign_reg_two();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function course_reg_two_block_view($delta="")
+  
+/**
+ * function to return reg_two form
+ */
+function assign_reg_two() 
+  {
+  $content = drupal_get_form('course_reg_two_form');
+  return($content);
+  } // end function assign_reg_two() 
+  
+/**
+ * implementation of hook_form
+ */
+function course_reg_two_form($form, &$form_state)
+  {
+
+//echo "<br /><br /><pre>".print_r($_SESSION['classroom']).print_r($_SESSION['courseID'])."</pre><br /><br />";  
+
+  $result = db_query("SELECT course_title FROM dln_course WHERE course_id='".$_SESSION['courseID'][0]."'");
+  $row = $result -> fetchAssoc();
+  extract($row);
+
+  $form['description']=array
+    (
+    '#type' => 'item',
+    '#title' => t('Locate an open slot from the schedule below for <u>'.$course_title.'</u>.'),
+    );
+
+  // first, get the first day 15 days out
+  $startDate = strtotime(date("F j, Y"))+1296000;
+  // next, get the last day 75 days out
+  $endDate = strtotime(date("F j, Y"))+6480000;
+  // create an array to hold days
+  $daysArray = array();
+  //Now, fill it with weekdays (not Saturdays nor Sundays);
+  for($i=$startDate;$i<=$endDate;$i=$i+86400)
+    {
+    if(date("D",$i)!="Sat" && date("D",$i)!="Sun") $daysArray[$i] = date("l, M jS, Y",$i);
+    } 
+
+  $form['dates_available'] = array
+    (
+    '#type' => 'select',
+    '#options' => $daysArray,
+    '#description' => t('Select which day you\'d like to have your class'),
+    '#title' => t('Days Available'),
+    );
+  
+  $optionsArray = array
+    (
+    '8' => '8:00am',
+    '8.5' => '8:30am',
+    '9' => '9:00am',
+    '9.5' => '9:30am',
+    '10' => '10:00am',
+    '10.5' => '10:30am',
+    '11' => '11:00am',
+    '11.5' => '11:30am',
+    '12' => '12:00pm',
+    '12.5' => '12:30pm',
+    '13' => '1:00pm',
+    '13.5' => '1:30pm',
+    '14' => '2:00pm',
+    '14.5' => '2:30pm',
+    '15' => '3:00pm',
+    );
+
+  $form['start_time'] = array
+    (
+    '#type' => 'select',
+    '#options' => $optionsArray,
+    '#title' => t('Start Time'),
+    '#description' => t('Select the time you\'d like to start'),
+    );
+
+  $optionsArray = array
+    (
+    '30' => '30 minutes',
+    '45' => '45 minutes',
+    '60' => '1 hour',
+    );
+
+  $form['duration'] = array
+    (
+    '#type' => 'select',
+    '#options' => $optionsArray,
+    '#title' => t('Duration'),
+    '#description' => t('How long would you like the class to go for?'),
+    );
+
+  $form['submit'] = array
+    (
+    '#type' => 'submit',
+    '#value' => t('Submit'), 
+    );
+  return($form);
+
+  }// end function course_reg_two_form($form, &$form_state)
+  
+/**
+ * implementation of hook_form_validate
+ */
+function course_reg_two_form_validate($form,&$form_state)
+  {
+  }//end function course_reg_two_form_validate($form,&$form_state)
+  
+/**
+ * Implementation of hook_form_submit
+ */
+function course_reg_two_form_submit($form, &$form_state)
+  {
+  $duration = $form['duration']['#value']." minutes"; 
+  $timestamp = $form['dates_available']['#value'] + $form['start_time']['#value'] * 3600;  
+ 
+  $result = db_query("SELECT course_title FROM dln_course WHERE course_id='".$_SESSION['courseID'][0]."'");
+  $row = $result -> fetchAssoc();
+  extract($row);
+
+  $details = "";
+  $details .= "<p>School: ".$_SESSION['classroom']['school']." </p>";
+  $details .= "<p>Teacher: ".$_SESSION['classroom']['teacher']."</p>";
+ 
+  //insert into events table
+  $result=db_insert('events')
+    ->fields(array(
+      'event_title',
+      'event_type',
+      'event_details',
+      'event_timestamp',
+      'event_location',
+      'contact_name',
+      'event_duration',))
+    ->values(array(
+      'event_title'=>$course_title,
+      'event_type' => "Internet Class",
+      'event_details' => $details,
+      'event_timestamp'=>$timestamp,
+      'event_location'=>"Web Event",
+      'contact_name' => $_SESSION['classroom']['teacher'],
+      'event_duration'=>$duration,
+      ))
+    ->execute();
+  drupal_set_message("Your course has been requested and it tentatively blocked on the <a href=\"http://localhost/calendar\">Calendar of Events</a>.  Your request will be reviewed and you will be notified whether it is approved or not.");
+  }//end function course_reg_two_form_submit($form, &$form_state)

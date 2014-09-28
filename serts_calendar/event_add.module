@@ -1,0 +1,323 @@
+<?php
+// $Id: event_add.module Exp $
+
+/**
+ * Implementation of hook_block_info
+ */
+function event_add_block_info() 
+  {
+  $blocks['event_add']=array
+    (
+    'info' => t('Add Event'),
+    'weight' => 1,
+    );
+  return($blocks); 
+  } // end function event_add_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function event_add_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "event_add":
+      $block['subject'] = t('Add an Event');
+      $block['content'] = add_event();
+      break;
+      
+    default:
+      $block['subject'] = t('Add an Event');
+      $block['content'] = add_event();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function event_add_block_view($delta="")
+  
+/**
+ * function to return doc_upload form
+ */
+function add_event() 
+  {
+  $content = drupal_get_form('event_add_form');
+  return($content);
+  } // end function add_event() 
+  
+/**
+ * implementation of hook_form
+ */
+function event_add_form($form, &$form_state)
+  {
+  $form['description']=array
+    (
+    '#type' => 'item',
+    '#title' => t('Add your event below. &nbsp;Items with an asterisk (*) are mandatory fields.'),
+    );
+  
+  $form['eventBlock'] = array
+    (
+    '#type' => 'fieldset',
+    '#title' => t('Event Details'),
+    //'#collapsible' => TRUE,
+    //'#collapsed' => FALSE,
+    );
+  
+  $form['eventBlock']['event_title'] = array
+    (
+    '#type' => 'textfield',
+    '#title' => t('Event Title'),
+    '#required' => TRUE,
+    //'#default value' => "doc_name",
+    '#description' => t('Enter the name of the event here'),
+    );
+  
+  $form['eventBlock']['event_desc'] = array
+    (
+    '#type' => 'textarea',
+    '#title' => t('Event Description'),
+    '#description' => t('Enter the details of this event.'),
+    '#required' => TRUE,
+    );
+  
+  $form['eventBlock']['event_location']=array
+    (
+    '#type' => 'textfield',
+    '#title' => t('Location'),
+    '#description' => t('Enter the location of this event.'),
+    );
+  
+  $optionsArray = array();
+  $results = db_query("SELECT * FROM event_type");
+  while($row = $results -> fetchAssoc())
+    {
+    extract($row);
+    $optionsArray[$event_type] = $type_description;
+    }
+  $form['eventBlock']['eventType']=array
+    (
+    '#type' => 'select',
+    '#title' => t('Type of Event'),
+    '#options' => $optionsArray,
+    '#description' => t('Select the type of event being added.'),
+    );
+  
+  $groupsArray = array();
+  $results2=db_query("select * from og");
+  while($row2 = $results2 -> fetchAssoc())
+    {
+    extract($row2);
+    $results3=db_query("SELECT `type` FROM node WHERE nid=:etid",array(':etid'=>$etid));
+    $row3=$results3->fetchAssoc();
+    extract($row3);
+    $arrKey = array('gid'=>$gid, 'label'=>$label, 'groupType' => $type);
+    $groupsArray[] = $arrKey;
+    }
+  
+  $statesArray=array();
+  foreach($groupsArray as $groupArray)
+    {
+    if($groupArray['groupType']=='state_groups') 
+      {
+      $statesArray[]=$groupArray['label'];
+      }
+    }
+  sort($statesArray);
+  
+  $form['eventBlock']['states']=array
+    (
+    '#type'=>'checkboxes',
+    '#options'=>drupal_map_assoc($statesArray),
+    '#title'=>t('States and Territories'),
+    );
+  
+  $functionalArray=array();
+  foreach($groupsArray as $groupArray)
+    {
+    if($groupArray['groupType']=='functional_groups')
+      {
+      $functionalArray[]=$groupArray['label'];
+      }
+    }
+  sort($functionalArray);
+  
+  $form['eventBlock']['functional']=array
+    (
+    '#type'=>'checkboxes',
+    '#options'=>drupal_map_assoc($functionalArray),
+    '#title'=>t('Functional Groups'),
+    );
+  
+  $now=time();
+  $form['eventBlock']['event_date']=array
+    (
+    '#type'=>'date_select',
+    '#title' => t('Date and Time of Event'),
+    '#description' => t('Enter the date of the event here'),
+    '#required' => TRUE,
+    '#default_value' => $now,
+    );
+  
+  $form['eventBlock']['event_duration']=array
+    (
+    '#type'=>'textfield',
+    '#title'=>t('Length of Time of Event'),
+    '#description'=> t('Enter how long the event runs here.'),
+    );
+    
+  $form['eventBlock']['contact_name']=array
+    (
+    '#type'=>'textfield',
+    '#title'=>t('Name of Contact'),
+    '#description'=>t('Enter the name of the point of contact here.'),
+    );
+    
+  $form['eventBlock']['contact_phone']=array
+    (
+    '#type'=>'textfield',
+    '#title'=>t('Contact Phone'),
+    '#description'=>t('Enter the phone number of the point of contact here.'),
+    );
+    
+  $form['eventBlock']['contact_email']=array
+    (
+    '#type'=>'textfield',
+    '#title'=>t('Contact Email'),
+    '#description'=>t('Enter the email of the point of contact here.'),
+    );
+    
+  $form['eventBlock']['webinar']=array
+    (
+    '#type'=>'textfield',
+    '#title'=>t('Webinar Link'),
+    '#description'=>t('Enter the URL for the webinar here.'),
+    );
+  
+  $form['submit'] = array
+    (
+    '#type' => 'submit',
+    '#value' => t('Submit'), 
+    );
+  return($form);
+  }// end function event_add_form($form, &$form_state)
+  
+/**
+ * implementation of hook_form_validate
+ */
+function event_add_form_validate($form,&$form_state)
+  {
+  $title= $form['eventBlock']['event_title']['#value'];
+  if(strlen($title)<2)
+    form_set_error('event_title',t('Event Title is too short.'));
+  
+  $description= $form['eventBlock']['event_desc']['#value'];
+  if(strlen($description)<2)
+    form_set_error('event_desc',t('Event Description is too short.'));
+  
+  $contactEmail=$form['eventBlock']['contact_email']['#value'];
+  if($contactEmail != NULL)
+    {
+    $test1=explode("@",$contactEmail);
+    if(count($test1) != 2) form_set_error('contact_email',t('Incorrect email format.'));
+    else
+      {
+      $test2=explode(".",$test1[1]);
+      if(count($test2) != 2) form_set_error('contact_email',t('Incorrect email format.'));
+      }
+    }
+  }//end function event_add_form_validate($form,&$form_state)
+  
+/**
+ * Implementation of hook_form_submit
+ */
+function event_add_form_submit($form, &$form_state)
+  {
+  //building the timestamp from the date select function
+  $date=$form['eventBlock']['event_date']['#value'];
+  $month=sprintf("%02d",$date['month']);
+  $day=sprintf("%02d",$date['day']);
+  $year=$date['year'];
+  $hour=$date['hour'];
+  $minute=$date['minute'];
+  $timestamp=strtotime("$year-$month-$day $hour:$minute:00");
+  
+  //getting the rest of the variables
+  $title=$form['eventBlock']['event_title']['#value'];
+  $description=$form['eventBlock']['event_desc']['#value'];
+  $location=$form['eventBlock']['event_location']['#value'];
+  $type=$form['eventBlock']['eventType']['#value'];
+
+  
+  $duration=$form['eventBlock']['event_duration']['#value'];
+  $contactName=$form['eventBlock']['contact_name']['#value'];
+  $contactPhone=$form['eventBlock']['contact_phone']['#value'];
+  $contactEmail=$form['eventBlock']['contact_email']['#value'];
+  $webinar=$form['eventBlock']['webinar']['#value'];
+  
+  //insert into events table
+  $result=db_insert('events')
+    ->fields(array(
+      'event_title',
+      'event_details',
+      'event_timestamp',
+      'event_location',
+      'event_type',
+      'event_duration',
+      'contact_name',
+      'contact_phone',
+      'contact_email',
+      'webinar',))
+    ->values(array(
+      'event_title'=>$title,
+      'event_details'=>$description,
+      'event_timestamp'=>$timestamp,
+      'event_location'=>$location,
+      'event_type'=>$type,
+      'event_duration'=>$duration,
+      'contact_name'=>$contactName,
+      'contact_phone'=>$contactPhone,
+      'contact_email'=>$contactEmail,
+      'webinar'=>$webinar,
+      ))
+    ->execute();
+    
+  //get the last inserted id
+  $result=db_query("SELECT event_id FROM events ORDER BY event_id DESC LIMIT 1");
+  $row=$result->fetchAssoc();
+  extract($row);
+ 
+  $group=$form['eventBlock']['states']['#value'];
+  foreach($group as $state)
+    {
+    //get the state's id
+    $stateResult=db_query("SELECT gid,etid FROM og WHERE label='$state'");
+    $stateRow=$stateResult->fetchAssoc();
+    extract($stateRow);
+    $sID=$gid."|".$etid;
+
+    //insert into the event_group table
+    $result=db_insert('event_group')
+      ->fields(array('event_id','group_id'))
+      ->values(array('event_id'=>$event_id,'group_id'=>$sID))
+      ->execute();
+    }
+
+  $group2=$form['eventBlock']['functional']['#value'];
+  foreach($group2 as $functional)
+    {
+    //get the functional groups's id
+    $functionalResult=db_query("SELECT gid,etid FROM og WHERE label='$functional'");
+    $functionalRow=$functionalResult->fetchAssoc();
+    extract($functionalRow);
+    $fID=$gid."|".$etid;
+
+    //insert into the event_group table
+    $result=db_insert('event_group')
+      ->fields(array('event_id','group_id'))
+      ->values(array('event_id'=>$event_id,'group_id'=>$fID))
+      ->execute();
+    }
+ 
+  drupal_set_message("Event is added to the calendar.");
+  }//end function event_add_form_submit($form, &$form_state)
+// Array ( [month] => 1 [day] => 23 [year] => 2012 [hour] => 09 [minute] => 19 ) 

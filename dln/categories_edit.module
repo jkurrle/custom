@@ -1,0 +1,127 @@
+<?php
+
+/**
+ * Implementation of hook_block_info
+ */
+function categories_edit_block_info() 
+  {
+  $blocks['categories_edit']=array
+    (
+    'info' => t('Update DLN Category'),
+    'weight' => 1,
+    );
+  return($blocks); 
+  } // end function categories_edit_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function categories_edit_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "categories":
+      $block['subject'] = t('Update DLN Category');
+      $block['content'] = edit_categories();
+      break;
+      
+    default:
+      $block['subject'] = t('Update DLN Category');
+      $block['content'] = edit_categories();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function categories_edit_block_view($delta="")
+  
+/**
+ * function to return categories form
+ */
+function edit_categories() 
+  {
+  $content = drupal_get_form('categories_edit_form');
+  return($content);
+  } // end function edit_categories() 
+  
+/**
+ * implementation of hook_form
+ */
+function categories_edit_form($form, &$form_state)
+  {
+  if(isset($_POST['id'])) $_SESSION['mydata']=array((int)$_POST['id']);
+  $result=db_query("SELECT * FROM dln_categories WHERE cat_id='".$_SESSION['mydata'][0]."'");
+  $row = $result -> fetchAssoc();
+  extract($row);
+
+  $form['description']=array
+    (
+    '#type' => 'item',
+    '#title' => t('Update the categories below. &nbsp;Items with an asterisk (*) are mandatory fields.'),
+    );
+  
+  $form['categoriesBlock'] = array
+    (
+    '#type' => 'fieldset',
+    '#title' => t('Category Details'),
+    //'#collapsible' => TRUE,
+    //'#collapsed' => FALSE,
+    );
+  
+  $form['categoriesBlock']['cat_name'] = array
+    (
+    '#type' => 'textfield',
+    '#title' => t('Category Name'),
+    '#default_value' => $cat_name,
+    '#required' => TRUE,
+    '#description' => t('Enter the name of the category here'),
+    );
+  
+  $form['categoriesBlock']['cat_desc'] = array
+    (
+    '#type' => 'textarea',
+    '#title' => t('Category Description'),
+    '#default_value' => $cat_desc,
+    '#description' => t('Enter a description of this category.'),
+    '#required' => TRUE,
+    );
+  
+  $form['submit'] = array
+    (
+    '#type' => 'submit',
+    '#value' => t('Submit'), 
+    );
+  return($form);
+  }// end function categories_edit_form($form, &$form_state)
+  
+/**
+ * implementation of hook_form_validate
+ */
+function categories_edit_form_validate($form,&$form_state)
+  {
+  $name= check_plain($form['categoriesBlock']['cat_name']['#value']);
+  if(strlen($name)<2)
+    form_set_error('categories_edit_title',t('Category Name is too short.'));
+  
+  $description= check_plain($form['categoriesBlock']['cat_desc']['#value']);
+  if(strlen($description)<2)
+    form_set_error('categories_edit_desc',t('Category Description is too short.'));
+  
+  }//end function categories_edit_form_validate($form,&$form_state)
+  
+/**
+ * Implementation of hook_form_submit
+ */
+function categories_edit_form_submit($form, &$form_state)
+  {
+  $name=check_plain($form['categoriesBlock']['cat_name']['#value']);
+  $desc=check_plain($form['categoriesBlock']['cat_desc']['#value']);
+  
+  //insert into categoriess table
+  $result=db_query("UPDATE dln_categories SET
+      cat_name = '$name',
+      cat_desc = '$desc',
+      org_id = '1'
+      WHERE cat_id='".$_SESSION['mydata'][0]."'");
+    
+  drupal_set_message("Category is updated.");
+  }//end function categories_edit_form_submit($form, &$form_state)

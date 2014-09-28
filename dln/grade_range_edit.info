@@ -1,0 +1,5 @@
+; $Id: grade_range_edit.info, v 1.0.0.0 2014/09/04 10:30:00 JKurrle Exp $
+name = "Edit Grade Ranges (DLN)"
+description = "Edit DLN Grade Ranges"
+core = "7.x"
+package = "DLN"

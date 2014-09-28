@@ -1,0 +1,151 @@
+<?php
+
+/**
+ * Implementation of hook_block_info
+ */
+function location_block_info() 
+  {
+  $blocks['location']=array
+    (
+    'info' => t('Add DLN Location'),
+    'weight' => 1,
+    );
+  return($blocks); 
+  } // end function location_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function location_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "location":
+      $block['subject'] = t('DLN Location');
+      $block['content'] = add_location();
+      break;
+      
+    default:
+      $block['subject'] = t('DLN Location');
+      $block['content'] = add_location();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function location_block_view($delta="")
+  
+/**
+ * function to return location form
+ */
+function add_location() 
+  {
+  $content = drupal_get_form('location_form');
+  return($content);
+  } // end function add_location() 
+  
+/**
+ * implementation of hook_form
+ */
+function location_form($form, &$form_state)
+  {
+  $form['description']=array
+    (
+    '#type' => 'item',
+    '#title' => t('Add the location below. &nbsp;Items with an asterisk (*) are mandatory fields.'),
+    );
+  
+  $form['locationBlock'] = array
+    (
+    '#type' => 'fieldset',
+    '#title' => t('Location Details'),
+    //'#collapsible' => TRUE,
+    //'#collapsed' => FALSE,
+    );
+  
+  $form['locationBlock']['loc_name'] = array
+    (
+    '#type' => 'textfield',
+    '#title' => t('Location Name'),
+    '#required' => TRUE,
+    '#description' => t('Enter the name of the location here'),
+    );
+  
+  $form['locationBlock']['loc_desc'] = array
+    (
+    '#type' => 'textarea',
+    '#title' => t('Location Description'),
+    '#description' => t('Enter the details of this location.'),
+    '#required' => TRUE,
+    );
+  
+  $form['locationBlock']['boiler_acc']=array
+    (
+    '#type' => 'textarea',
+    '#title' => t('Acceptance Letter'),
+    '#description' => t('Enter the boilerplate acceptance email here.'),
+    );
+  
+  $form['locationBlock']['boiler_rej']=array
+    (
+    '#type' => 'textarea',
+    '#title' => t('Rejection Letter'),
+    '#description' => t('Enter the boilerplate rejection email here.'),
+    );
+  
+  $form['submit'] = array
+    (
+    '#type' => 'submit',
+    '#value' => t('Submit'), 
+    );
+  return($form);
+  }// end function location_form($form, &$form_state)
+  
+/**
+ * implementation of hook_form_validate
+ */
+function location_form_validate($form,&$form_state)
+  {
+  $name= check_plain($form['locationBlock']['loc_name']['#value']);
+  if(strlen($name)<2)
+    form_set_error('location_title',t('Location Name is too short.'));
+  
+  $description= check_plain($form['locationBlock']['loc_desc']['#value']);
+  if(strlen($description)<2)
+    form_set_error('location_desc',t('Location Description is too short.'));
+  
+  }//end function location_form_validate($form,&$form_state)
+  
+/**
+ * Implementation of hook_form_submit
+ */
+function location_form_submit($form, &$form_state)
+  {
+  $name=check_plain($form['locationBlock']['loc_name']['#value']);
+  $desc=check_plain($form['locationBlock']['loc_desc']['#value']);
+  $boilera=check_plain($form['locationBlock']['boiler_acc']['#value']);
+  $boilerr=check_plain($form['locationBlock']['boiler_rej']['#value']);
+  
+  //insert into locations table
+  $result=db_insert('dln_location')
+    ->fields(array(
+      'loc_name',
+      'loc_desc',
+      'boiler_acc',
+      'boiler_rej',
+      'org_id',))
+    ->values(array(
+      'loc_name'=>$name,
+      'loc_desc'=>$desc,
+      'boiler_acc'=>$boilera,
+      'boiler_rej'=>$boilerr,
+      'org_id'=>1,
+      ))
+    ->execute();
+    
+  //get the last inserted id
+  $result=db_query("SELECT loc_id FROM dln_location ORDER BY loc_id DESC LIMIT 1");
+  $row=$result->fetchAssoc();
+  extract($row);
+ 
+  drupal_set_message("Location is added.");
+  }//end function location_form_submit($form, &$form_state)

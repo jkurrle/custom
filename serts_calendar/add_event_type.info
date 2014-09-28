@@ -1,0 +1,5 @@
+; $Id: add_event_type.info, v 1.0.0.0 2012/01/19 19:45:00 JKurrle Exp $
+name = "Add Calendar Event Type"
+description = "Block to add a calendar event type"
+core = "7.x"
+package = "SERTS"

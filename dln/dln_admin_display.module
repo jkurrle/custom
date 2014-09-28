@@ -1,0 +1,92 @@
+<?php
+// $Id: dln_admin_display.module Exp $
+
+/**
+ * Implementation of hook_block_info
+ */
+function dln_admin_display_block_info() 
+  {
+  $blocks['dln_admin_display']=array
+    (
+    'info' => t('Display DLN Administrators'),
+    'weight' => 1,
+    );
+  return($blocks); 
+  } // end function dln_admin_display_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function dln_admin_display_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "dln_admin_display":
+      $block['subject'] = t('Display DLN Administrators');
+      $block['content'] = dln_admin_display();
+      break;
+      
+    default:
+      $block['subject'] = t('Display DLN Administrators');
+      $block['content'] = dln_admin_display();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function dln_admin_display_block_view($delta="")
+  
+/**
+ * function to return event details
+ */
+function dln_admin_display()
+  {
+  $content = "";
+
+  $result=db_query("SELECT * FROM `dln_admin`");
+  //if there's no event data
+  if(count($result)==0) 
+    $content = "No records available.";
+  else // there's event data
+    {
+    
+    //Create array of results
+    $dataFields=array();
+    while($row = $result -> fetchAssoc())
+      {
+      extract($row);
+      $result2 = db_query("SELECT loc_name from dln_location where loc_id='$admin_loc'");
+      $row2 = $result2 -> fetchAssoc();
+      extract($row2);
+      $dataFields[]=array($admin_name,$admin_email,$loc_name,$admin_id);
+      } 
+
+    //headers for the table
+    $headers = array('Administrator Name','Administrator Email', 'Location', 'Edit?');
+
+    $content .= "<table border=\"1\">\r\n";
+    //writing the table header
+    $content .= "<tr>";
+    foreach($headers as $header)
+      {
+      $content .= "<th>$header</th>";
+      }
+    $content .= "</tr>\r\n";
+
+    // Now, add data fields
+    foreach($dataFields as $dataField)
+      {
+      $id=array_pop($dataField);
+      $content .= "<tr>";
+      foreach($dataField as $dataItem)
+        {
+        $content .= "<td>$dataItem</td>";
+        }
+      $content .= "<td><form method=\"post\" action=\"edit-administrator\"><input type=\"hidden\" name=\"id\" value=\"$id\" /><input type=\"submit\" value=\"Edit\" /></form></td>";
+      $content .= "</tr>\r\n";
+      }   
+
+    $content .= "</table>\r\n";
+    }// end else there's event data   
+  
+  return($content);
+  }//end function dln_admin_display()

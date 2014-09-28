@@ -1,0 +1,5 @@
+; $Id: location.info, v 1.0.0.0 2014/09/04 10:30:00 JKurrle Exp $
+name = "Location (DLN)"
+description = "DLN Location"
+core = "7.x"
+package = "DLN"

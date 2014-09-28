@@ -1,0 +1,162 @@
+<?php
+
+/**
+ * Implementation of hook_block_info
+ */
+function dln_admin_block_info() 
+  {
+  $blocks['dln_admin']=array
+    (
+    'info' => t('Add DLN Administrator'),
+    'weight' => 1,
+    );
+  return($blocks); 
+  } // end function dln_admin_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function dln_admin_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "dln_admin":
+      $block['subject'] = t('Add a DLN Administrator');
+      $block['content'] = add_dln_administrator();
+      break;
+      
+    default:
+      $block['subject'] = t('Add a DLN Administrator');
+      $block['content'] = add_dln_administrator();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function dln_admin_block_view($delta="")
+  
+/**
+ * function to return dln_administrator form
+ */
+function add_dln_administrator() 
+  {
+  $content = drupal_get_form('dln_admin_form');
+  return($content);
+  } // end function add_dln_administrator() 
+  
+/**
+ * implementation of hook_form
+ */
+function dln_admin_form($form, &$form_state)
+  {
+  $form['description']=array
+    (
+    '#type' => 'item',
+    '#title' => t('Add your dln_administrator below. &nbsp;Items with an asterisk (*) are mandatory fields.'),
+    );
+  
+  $form['dln_administratorBlock'] = array
+    (
+    '#type' => 'fieldset',
+    '#title' => t('Administrator Details'),
+    //'#collapsible' => TRUE,
+    //'#collapsed' => FALSE,
+    );
+  
+  $form['dln_administratorBlock']['dln_admin_name'] = array
+    (
+    '#type' => 'textfield',
+    '#title' => t('Administrator Full Name'),
+    '#required' => TRUE,
+    '#description' => t('Enter the name of the dln_administrator here'),
+    );
+  
+  $form['dln_administratorBlock']['dln_admin_email'] = array
+    (
+    '#type' => 'textfield',
+    '#title' => t('Administrator Email'),
+    '#description' => t('Enter the email of this dln_administrator.'),
+    '#required' => TRUE,
+    );
+  
+  $optionsArray = array();
+  $results = db_query("SELECT * FROM dln_location");
+  while($row = $results -> fetchAssoc())
+    {
+    extract($row);
+    $optionsArray[$loc_id] = $loc_name;
+    }
+  $form['dln_administratorBlock']['dln_admin_loc']=array
+    (
+    '#type' => 'select',
+    '#title' => t('Location of Administrator'),
+    '#options' => $optionsArray,
+    '#description' => t('Select where the dln_administrator is located.'),
+    );
+  
+  $form['submit'] = array
+    (
+    '#type' => 'submit',
+    '#value' => t('Submit'), 
+    );
+  return($form);
+  }// end function dln_admin_form($form, &$form_state)
+  
+/**
+ * implementation of hook_form_validate
+ */
+function dln_admin_form_validate($form,&$form_state)
+  {
+  $name= check_plain($form['dln_administratorBlock']['dln_admin_name']['#value']);
+  if(strlen($name)<2)
+    form_set_error('dln_admin_name',t('Administrator Name is too short.'));
+  
+  $contactEmail = check_plain($form['dln_administratorBlock']['dln_admin_email']['#value']);
+  if($contactEmail != NULL)
+    {
+    $test1=explode("@",$contactEmail);
+    if(count($test1) != 2) form_set_error('dln_admin_email',t('Incorrect email format.'));
+    else
+      {
+      $test2=explode(".",$test1[1]);
+      if(count($test2) != 2) form_set_error('dln_admin_email',t('Incorrect email format.'));
+      }
+    }
+  else
+    {
+    form_set_error('dln_admin_email', t('Administrator email is required.'));
+    }
+  }//end function dln_admin_form_validate($form,&$form_state)
+  
+/**
+ * Implementation of hook_form_submit
+ */
+function dln_admin_form_submit($form, &$form_state)
+  {
+
+  //getting the rest of the variables
+  $name=check_plain($form['dln_administratorBlock']['dln_admin_name']['#value']);
+  $email=check_plain($form['dln_administratorBlock']['dln_admin_email']['#value']);
+  $location=$form['dln_administratorBlock']['dln_admin_loc']['#value'];
+
+  //insert into dln_administrators table
+  $result=db_insert('dln_admin')
+    ->fields(array(
+      'admin_name',
+      'admin_email',
+      'admin_loc',
+      'org_id',))
+    ->values(array(
+      'admin_name'=>$name,
+      'admin_email'=>$email,
+      'admin_loc'=>$location,
+      'org_id'=>1,
+      ))
+    ->execute();
+    
+  //get the last inserted id
+  $result=db_query("SELECT admin_id FROM dln_admin ORDER BY admin_id DESC LIMIT 1");
+  $row=$result->fetchAssoc();
+  extract($row);
+ 
+  drupal_set_message("Administrator is added. Admin ID is $admin_id.");
+  }//end function dln_admin_form_submit($form, &$form_state)

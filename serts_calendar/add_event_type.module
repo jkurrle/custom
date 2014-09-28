@@ -1,0 +1,116 @@
+<?php
+// $Id: add_event_type.module Exp $
+
+/**
+ * Implementation of hook_block_info
+ */
+function add_event_type_block_info() 
+  {
+  $blocks['add_event_type']=array
+    (
+    'info' => t('Add an Event Type'),
+    'weight' => 1,
+    );
+  return($blocks); 
+  } // end function add_event_type_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function add_event_type_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "add_event_type":
+      $block['subject'] = t('Add an Event Type');
+      $block['content'] = add_event_type();
+      break;
+      
+    default:
+      $block['subject'] = t('Add an Event Type');
+      $block['content'] = add_event_type();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function add_event_Type_block_view($delta="")
+  
+/**
+ * function to return doc_upload form
+ */
+function add_event_type() 
+  {
+  $content = drupal_get_form('add_event_type_form');
+  return($content);
+  } // end function add_event_type() 
+  
+/**
+ * implementation of hook_form
+ */
+function add_event_type_form($form, &$form_state)
+  {
+  $form['description']=array
+    (
+    '#type' => 'item',
+    '#title' => t('Add your event type below. &nbsp;Items with an asterisk (*) are mandatory fields.'),
+    );
+  
+  $form['eventTypeBlock'] = array
+    (
+    '#type' => 'fieldset',
+    '#title' => t('Event Details'),
+    //'#collapsible' => TRUE,
+    //'#collapsed' => FALSE,
+    );
+  
+  $form['eventTypeBlock']['eventTypeName'] = array
+    (
+    '#type' => 'textfield',
+    '#title' => t('Event Type Name'),
+    '#required' => TRUE,
+    '#description' => t('Enter the name of the event type here'),
+    );
+  
+  $form['eventTypeBlock']['eventTypeDesc'] = array
+    (
+    '#type' => 'textfield',
+    '#title' => t('Event Type Display Name'),
+    '#description' => t('Enter what to display in a dropdown list.'),
+    '#required' => TRUE,
+    );
+  
+  $form['submit'] = array
+    (
+    '#type' => 'submit',
+    '#value' => t('Submit'), 
+    );
+  return($form);
+  }// end function add_event_type_form($form, &$form_state)
+  
+/**
+ * implementation of hook_form_validate
+ */
+function add_event_type_form_validate($form, &$form_state)
+  {
+  $title = $form['eventTypeBlock']['eventTypeName']['#value'];
+  if(strlen($title)<2)
+    form_set_error('doc_title',t('Event type is too short.'));
+  
+  $description = $form['eventTypeBlock']['eventTypeDesc']['#value'];
+  if(strlen($description)<2)
+    form_set_error('doc_desc',t('Event type description is too short'));
+  } // end function add_event_type_form_validate($form, &$form_state)
+  
+/** 
+ * Implementation of hook_form_submit
+ */
+function add_event_type_form_submit($form, &$form_state)
+  {
+  $title = $form['eventTypeBlock']['eventTypeName']['#value'];
+  $description = $form['eventTypeBlock']['eventTypeDesc']['#value'];
+  $result=db_insert('event_type')
+    ->fields(array('event_type','type_description'))
+    ->values(array('event_type'=>$title,'type_description'=>$description,))
+    ->execute();
+  drupal_set_message(t('Your event type has been added'));
+  }// end function add_event_type_form_submit($form, &$form_state)

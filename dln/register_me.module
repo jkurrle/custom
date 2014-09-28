@@ -1,0 +1,70 @@
+<?php
+
+/**
+ * Implementation of hook_block_info
+ */
+function register_me_block_info() 
+  {
+  $blocks['register_me']=array
+    (
+    'info' => t('Register for this Course'),
+    'weight' => 1,
+    );
+  return($blocks); 
+  } // end function register_me_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function register_me_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "register":
+      $block['subject'] = t('Register for this Course');
+      $block['content'] = assign_register();
+      break;
+      
+    default:
+      $block['subject'] = t('Register for this Course');
+      $block['content'] = assign_register();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function register_me_block_view($delta="")
+  
+/**
+ * function to return register form
+ */
+function assign_register() 
+  {
+  $content = '';
+
+  if (arg(0) == 'node' && is_numeric(arg(1))) 
+    {
+    // Get the nid
+    $nid = arg(1);
+    // Load the node if you need to
+    $node = node_load($nid);
+    }
+
+//echo "<br /><br /><pre>".print_r($node)."</pre><br /><br />";
+
+  $course_name = $node->field_course_number['und'][0]['value'];
+  //$content .= "The course name is $course_name<br />";
+  
+  $result = db_query("SELECT * FROM dln_course WHERE course_number='$course_name'");
+  $row = $result->fetchAssoc();
+
+  if($row) 
+    {
+    extract($row);
+    $content = "<form method=\"post\" action=\"/sign-up\"><input type=\"hidden\" name=\"courseID\" value=\"$course_id\" /><input type=\"submit\" value=\"Sign Up\" /></form>";
+    }
+  else
+    {
+    $content .= "This course isn't fully loaded in the system yet.  Please be patient";
+    }
+  return($content);
+  } // end function assign_register() 

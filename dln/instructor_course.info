@@ -1,0 +1,5 @@
+; $Id: instructor_course.info, v 1.0.0.0 2014/09/04 10:30:00 JKurrle Exp $
+name = "Instructor Course Assignments (DLN)"
+description = "DLN Instructor Course Assignments"
+core = "7.x"
+package = "DLN"

@@ -1,0 +1,89 @@
+<?php
+// $Id: grade_range_display.module Exp $
+
+/**
+ * Implementation of hook_block_info
+ */
+function grade_range_display_block_info() 
+  {
+  $blocks['grade_range_display']=array
+    (
+    'info' => t('Display DLN Grade Ranges'),
+    'weight' => 1,
+    );
+  return($blocks); 
+  } // end function grade_range_display_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function grade_range_display_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "grade_range_display":
+      $block['subject'] = t('Display DLN Grade Ranges');
+      $block['content'] = grade_range_display();
+      break;
+      
+    default:
+      $block['subject'] = t('Display DLN Grade Ranges');
+      $block['content'] = grade_range_display();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function grade_range_display_block_view($delta="")
+  
+/**
+ * function to return event details
+ */
+function grade_range_display()
+  {
+  $content = "";
+
+  $result=db_query("SELECT * FROM `dln_grade_range`");
+  //if there's no event data
+  if(count($result)==0) 
+    $content = "No records available.";
+  else // there's event data
+    {
+    
+    //Create array of results
+    $dataFields=array();
+    while($row = $result -> fetchAssoc())
+      {
+      extract($row);
+      $dataFields[]=array($min_grade,$max_grade,$grade_range_id);
+      } 
+
+    //headers for the table
+    $headers = array('Minimum Grade','Maximum Grade','Edit?');
+
+    $content .= "<table border=\"1\">\r\n";
+    //writing the table header
+    $content .= "<tr>";
+    foreach($headers as $header)
+      {
+      $content .= "<th>$header</th>";
+      }
+    $content .= "</tr>\r\n";
+
+    // Now, add data fields
+    foreach($dataFields as $dataField)
+      {
+      $id=array_pop($dataField);
+      $content .= "<tr>";
+      foreach($dataField as $dataItem)
+        {
+        $content .= "<td>$dataItem</td>";
+        }
+      $content .= "<td><form method=\"post\" action=\"edit-grade-range\"><input type=\"hidden\" name=\"id\" value=\"$id\" /><input type=\"submit\" value=\"Edit\" /></form></td>";
+      $content .= "</tr>\r\n";
+      }   
+
+    $content .= "</table>\r\n";
+    }// end else there's event data   
+  
+  return($content);
+  }//end function grade_range_display()

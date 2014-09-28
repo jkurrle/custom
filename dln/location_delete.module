@@ -1,0 +1,100 @@
+	<?php
+
+	/**
+	 * Implementation of hook_block_info
+	 */
+	function location_delete_block_info() 
+	  {
+	  $blocks['location_delete']=array
+	    (
+	    'info' => t('Delete DLN Location'),
+	    'weight' => 1,
+	    );
+	  return($blocks); 
+	  } // end function location_delete_block_info() 
+
+	/**
+	 * Implementation of hook_block_view
+	 */
+	function location_delete_block_view($delta="")
+	  {
+	  $block = array();
+	  switch ($delta)
+	    {
+	    case "location_delete":
+	      $block['subject'] = t('Delete a DLN Location');
+	      $block['content'] = add_location_delete();
+	      break;
+	      
+	    default:
+	      $block['subject'] = t('Delete a DLN Location');
+	      $block['content'] = add_location_delete();
+	      break;
+	    }// end switch ($delta)
+	  return($block);
+	  }// end function location_delete_block_view($delta="")
+	  
+	/**
+	 * function to return doc_upload form
+	 */
+	function add_location_delete() 
+	  {
+	  $content = drupal_get_form('location_delete_form');
+	  return($content);
+	  } // end function add_location_delete() 
+	  
+	/**
+	 * implementation of hook_form
+	 */
+	function location_delete_form($form, &$form_state)
+	  {
+	  $form['description']=array
+	    (
+	    '#type' => 'item',
+	    '#title' => t('Delete your location below. &nbsp;Items with an asterisk (*) are mandatory fields.'),
+	    );
+	  
+	  $form['location_deleteBlock'] = array
+	    (
+	    '#type' => 'fieldset',
+	    '#title' => t('Location to Delete'),
+	    //'#collapsible' => TRUE,
+	    //'#collapsed' => FALSE,
+	    );
+	  
+	  $optionsArray = array();
+	  $results = db_query("SELECT * FROM dln_location");
+	  while($row = $results -> fetchAssoc())
+	    {
+	    extract($row);
+	    $optionsArray[$loc_id] = $loc_name;
+	    }
+	  $form['location_deleteBlock']['location_id']=array
+	    (
+	    '#type' => 'select',
+	    '#title' => t('Location to Delete'),
+	    '#options' => $optionsArray,
+	    '#description' => t('Select the location to delete.'),
+	    );
+
+	  $form['submit'] = array
+	    (
+	    '#type' => 'submit',
+	    '#value' => t('DELETE'), 
+	    );
+	  return($form);
+	  }// end function location_delete_form($form, &$form_state)
+	  
+	  
+	/**
+	 * Implementation of hook_form_submit
+	 */
+	function location_delete_form_submit($form, &$form_state)
+	  {
+	  $id = $form['location_deleteBlock']['location_id']['#value'];
+	  
+	  //insert into location_deletes table
+	  $result=db_query("DELETE from dln_location WHERE loc_id='$id'");
+	 
+	  drupal_set_message("Location is deleted.");
+	  }//end function location_delete_form_submit($form, &$form_state)

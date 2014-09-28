@@ -1,0 +1,5 @@
+; $Id: serts_calendar.info, v 1.0.0.0 2012/01/05 11:45:00 JKurrle Exp $
+name = "SERTS Calendar Display"
+description = "Block to display SERTS calendar"
+core = "7.x"
+package = "SERTS"

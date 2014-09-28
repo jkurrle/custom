@@ -1,0 +1,101 @@
+<?php
+// $Id: grade_range_delete.module Exp $
+
+/**
+ * Implementation of hook_block_info
+ */
+function grade_range_delete_block_info() 
+  {
+  $blocks['grade_range_delete']=array
+    (
+    'info' => t('Delete DLN Grade Range'),
+    'weight' => 1,
+    );
+  return($blocks); 
+  } // end function grade_range_delete_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function grade_range_delete_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "grade_range_delete":
+      $block['subject'] = t('Delete a DLN Grade Range');
+      $block['content'] = add_grade_range_delete();
+      break;
+      
+    default:
+      $block['subject'] = t('Delete a DLN Grade Range');
+      $block['content'] = add_grade_range_delete();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function grade_range_delete_block_view($delta="")
+  
+/**
+ * function to return doc_upload form
+ */
+function add_grade_range_delete() 
+  {
+  $content = drupal_get_form('grade_range_delete_form');
+  return($content);
+  } // end function add_grade_range_delete() 
+  
+/**
+ * implementation of hook_form
+ */
+function grade_range_delete_form($form, &$form_state)
+  {
+  $form['description']=array
+    (
+    '#type' => 'item',
+    '#title' => t('Delete your grade range below. &nbsp;Items with an asterisk (*) are mandatory fields.'),
+    );
+  
+  $form['grade_range_deleteBlock'] = array
+    (
+    '#type' => 'fieldset',
+    '#title' => t('Grade Range to Delete'),
+    //'#collapsible' => TRUE,
+    //'#collapsed' => FALSE,
+    );
+  
+  $optionsArray = array();
+  $results = db_query("SELECT * FROM dln_grade_range");
+  while($row = $results -> fetchAssoc())
+    {
+    extract($row);
+    $optionsArray[$grade_range_id] = $min_grade . " - " .$max_grade;
+    }
+  $form['grade_range_deleteBlock']['grade_range_id']=array
+    (
+    '#type' => 'select',
+    '#title' => t('Grade Range to Delete'),
+    '#options' => $optionsArray,
+    '#description' => t('Select the grade range to delete.'),
+    );
+
+  $form['submit'] = array
+    (
+    '#type' => 'submit',
+    '#value' => t('DELETE'), 
+    );
+  return($form);
+  }// end function grade_range_delete_form($form, &$form_state)
+  
+  
+/**
+ * Implementation of hook_form_submit
+ */
+function grade_range_delete_form_submit($form, &$form_state)
+  {
+  $id = $form['grade_range_deleteBlock']['grade_range_id']['#value'];
+  
+  //insert into grade_range_deletes table
+  $result=db_query("DELETE from dln_grade_range WHERE grade_range_id='$id'");
+ 
+  drupal_set_message("Grade Range is deleted.");
+  }//end function grade_range_delete_form_submit($form, &$form_state)

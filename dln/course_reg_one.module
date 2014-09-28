@@ -1,0 +1,304 @@
+<?php
+
+/**
+ * Implementation of hook_block_info
+ */
+function course_reg_one_block_info() 
+  {
+  $blocks['cregistration1']=array
+    (
+    'info' => t('Course Registration Part One'),
+    'weight' => 1,
+    );
+  return($blocks); 
+  } // end function course_reg_one_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function course_reg_one_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "course":
+      $block['subject'] = t('Course Registration Part One');
+      $block['content'] = add_registration();
+      break;
+      
+    default:
+      $block['subject'] = t('Course Registration Part One');
+      $block['content'] = add_registration();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function course_reg_one_block_view($delta="")
+  
+/**
+ * function to return course_reg_one form
+ */
+function add_registration() 
+  {
+  $content = drupal_get_form('course_reg_one_form');
+  return($content);
+  } // end function add_registration() 
+  
+/**
+ * implementation of hook_form
+ */
+function course_reg_one_form($form, &$form_state)
+  {
+  if(isset($_POST['courseID'])) 
+    {
+    $courseID = (int)$_POST['courseID'];
+    $_SESSION['courseID'] = array($courseID);
+    }
+  $result = db_query("SELECT course_title FROM dln_course WHERE course_id='".$_SESSION['courseID'][0]."'");
+  $row = $result -> fetchAssoc();
+  extract($row);
+
+  if(!isset($_SESSION['classroom']))
+    {
+    $_SESSION['classroom']=array('state'=>'','school'=>'','size'=>'','range'=>'','teacher'=>'','email'=>'');
+    }
+  $form['description']=array
+    (
+    '#type' => 'item',
+    '#title' => t('Add your details below to register for <u>'.$course_title.'</u>. &nbsp;Items with an asterisk (*) are mandatory fields.'),
+    );
+  
+  $form['regBlock1'] = array
+    (
+    '#type' => 'fieldset',
+    '#title' => t('Your Details'),
+    '#collapsible' => TRUE,
+    //'#collapsed' => FALSE,
+    );
+  
+  $optionsArray = array
+    (
+    'AL' => 'Alabama',
+    'AK' => 'Alaska',
+    'AZ' => 'Arizona',
+    'AR' => 'Arkansas',
+    'CA' => 'California',
+    'CO' => 'Colorado',
+    'CT' => 'Connecticut',
+    'DE' => 'Delaware',
+    'DC' => 'District of Columbia',
+    'FL' => 'Florida',
+    'GA' => 'Georgia',
+    'HI' => 'Hawaii',
+    'ID' => 'Idaho',
+    'IL' => 'Illinois',
+    'IN' => 'Indiana',
+    'IA' => 'Iowa',
+    'KS' => 'Kansas',
+    'KY' => 'Kentucky',
+    'LA' => 'Louisiana',
+    'ME' => 'Maine',
+    'MD' => 'Maryland',
+    'MA' => 'Massachusetts',
+    'MI' => 'Michigan',
+    'MN' => 'Minnesota',
+    'MS' => 'Mississippi',
+    'MO' => 'Missouri',
+    'MT' => 'Montana',
+    'NE' => 'Nebraska',
+    'NV' => 'Nevada',
+    'NH' => 'New Hampshire',
+    'NJ' => 'New Jersey',
+    'NM' => 'New Mexico',
+    'NY' => 'New York',
+    'NC' => 'North Carolina',
+    'ND' => 'North Dakota',
+    'OH' => 'Ohio',
+    'OK' => 'Oklahoma',
+    'OR' => 'Oregon',
+    'PA' => 'Pennsylvania',
+    'RI' => 'Rhode Island',
+    'SC' => 'South Carolina',
+    'SD' => 'South Dakota',
+    'TN' => 'Tennessee',
+    'TX' => 'Texas',
+    'UT' => 'Utah',
+    'VT' => 'Vermont',
+    'VA' => 'Virginia',
+    'WA' => 'Washington',
+    'WV' => 'West Virginia',
+    'WI' => 'Wisconsin',
+    'WY' => 'Wyoming',
+    'AS' => 'American Samoa',
+    'GU' => 'Guam',
+    'MP' => 'Northern Mariana Islands',
+    'PR' => 'Puerto Rico',
+    'VI' => 'Virgin Islands',
+    'FM' => 'Federated States of Micronesia',
+    'MH' => 'Marshall Islands',
+    'PW' => 'Palau',
+    );
+  $form['regBlock1']['reg_state']=array
+    (
+    '#type' => 'select',
+    '#title' => t('Classroom State (Location)'),
+    '#options' => $optionsArray,
+    '#description' => t('Select which state (or territory) your classroom is in.'),
+    '#default_value' => $_SESSION['classroom']['state'],
+    );
+
+  $form['regBlock1']['reg_school'] = array
+    (
+    '#type' => 'textfield',
+    '#title' => t('Your School'),
+    '#required' => TRUE,
+    '#description' => t('What is the name of the school or home study group you are coming from?'),
+    '#default_value' => str_replace("&#039;","'",$_SESSION['classroom']['school']),
+    );
+
+  $optionsArray=array();
+  for($i=1;$i<=99;$i++)
+    {
+    $optionsArray[$i] = $i;
+    }
+  $form['regBlock1']['reg_size'] = array
+    (
+    '#type' => 'select',
+    '#title' => t('Classroom Size'),
+    '#required' => TRUE,
+    '#options' => $optionsArray,
+    '#description' => t('Enter the number of students in your class'),
+    '#default_value' => $_SESSION['classroom']['size'],
+    );
+
+  $optionsArray = array();
+  $result = db_query("SELECT * FROM dln_grade_range");
+  while($row = $result -> fetchAssoc())
+    {
+    extract($row);
+    $optionsArray[$grade_range_id] = $min_grade . " to " . $max_grade;
+    }
+  $form['regBlock1']['reg_range'] = array
+    (
+    '#type' => 'select',
+    '#title' => 'Select Grade Level',
+    '#required' => TRUE,
+    '#description' => t('Select the grade range your classroom corresponds to.'),
+    '#options' => $optionsArray,
+    '#default_value' => $_SESSION['classroom']['range'],
+    );
+
+  $form['regBlock1']['reg_teacher'] = array
+    (
+    '#type' => 'textfield',
+    '#title' => t('Teacher in charge'),
+    '#description' => t('Enter the teacher responsible for this class.'),
+    '#required' => TRUE,
+    '#default_value' => $_SESSION['classroom']['teacher'],
+    );
+
+  $form['regBlock1']['reg_email'] = array
+    (
+    '#type' => 'textfield',
+    '#title' => t('Teacher Email'),
+    '#required' => TRUE,
+    '#description' => t('Enter the email of the teacher.'),
+    '#default_value' => $_SESSION['classroom']['email'],
+    );
+
+  if(isset($_POST['instr_ID'])) $_SESSION['instrID'] = array((int)$_POST['instr_ID']);
+ 
+  $ic="";
+  $result=db_query("SELECT instr_id FROM dln_instr_course WHERE course_id='".$_SESSION['courseID'][0]."'");
+  while($row=$result->fetchAssoc())
+    {
+    extract($row);
+    $ic .= $instr_id.",";
+    }
+  $ic = substr($ic,0,-1);
+  if($ic!='') $_SESSION['ic']=array($ic);
+ 
+  $locs = '';
+  $result=db_query("SELECT DISTINCT(instr_loc) FROM dln_instructor WHERE instr_id IN (".$_SESSION['ic'][0].")");
+  while($row = $result -> fetchAssoc())
+    {
+    extract($row);
+    $locs .= $instr_loc.",";
+    }
+  $locs = substr($locs,0,-1);
+
+  $optionsArray=array();
+  $result = db_query("SELECT loc_id,loc_name FROM dln_location WHERE loc_id IN ($locs)");
+  while($row = $result -> fetchAssoc())
+    {
+    extract($row);
+    $optionsArray[$loc_id]=$loc_name;
+    }
+
+  $form['regBlock1']['course_reg_two_name'] = array
+    (
+    '#type' => 'checkboxes',
+    '#options' => $optionsArray,
+    '#title' => t('Select from which locations you\'d like to use for your course.'),
+    '#required' => TRUE,
+    '#description' => t('Assign the courses here'),
+    );
+
+  $form['submit'] = array
+    (
+    '#type' => 'submit',
+    '#value' => t('Submit'), 
+    );
+  return($form);
+  }// end function course_reg_one_form($form, &$form_state)
+  
+/**
+ * implementation of hook_form_validate
+ */
+function course_reg_one_form_validate($form,&$form_state)
+  {
+  $title = check_plain($form['regBlock1']['reg_school']['#value']);
+  if(strlen($title)<2)
+    form_set_error('reg_school',t('The school/study group name is too short.'));
+
+  $desc = check_plain($form['regBlock1']['reg_teacher']['#value']);
+  if(strlen($desc)<2)
+    form_set_error('reg_teacher',t('The name of the teacher too short.'));
+
+  $email = $form['regBlock1']['reg_email']['#value'];
+  $firstSplit=explode('@',$email);
+  if(isset($firstSplit[1]) && $firstSplit[0]!=NULL && $firstSplit[1]!=NULL)
+    {
+    $secondSplit=explode('.',$firstSplit[1]);
+    if(!isset($secondSplit[1]) || $secondSplit[1]==NULL)
+      form_set_error('reg_email',t('Incorrect Email Format'));
+    }
+  else
+    {
+    form_set_error('reg_email',t('Incorrect Email Format'));
+    }
+
+  $size = $form['regBlock1']['reg_size']['#value'];
+  if($size<15) form_set_error('reg_size',t('Class size must be at least 15 students'));
+
+  $courses=$form['regBlock1']['course_reg_two_name']['#value'];
+  if(count($courses)==0) form_set_error('course_reg_two_name',t('You must select at least one location to have a class from'));
+
+  }//end function course_reg_one_form_validate($form,&$form_state)
+  
+/**
+ * Implementation of hook_form_submit
+ */
+function course_reg_one_form_submit($form, &$form_state)
+  {
+  $state = $form['regBlock1']['reg_state']['#value'];
+  $school = check_plain($form['regBlock1']['reg_school']['#value']);
+  $classSize = $form['regBlock1']['reg_size']['#value'];
+  $gradeRange = $form['regBlock1']['reg_range']['#value'];
+  $teacher = check_plain($form['regBlock1']['reg_teacher']['#value']);
+  $email = $form['regBlock1']['reg_email']['#value'];
+  $locs=$form['regBlock1']['course_reg_two_name']['#value'];
+
+  $_SESSION['classroom'] = array('state'=>$state,'school'=>$school,'size'=>$classSize,'range'=>$gradeRange,'teacher'=>$teacher,'email'=>$email,'locations'=>$locs);
+  drupal_goto("schedule-your-course");
+  drupal_set_message("Part One Complete.");
+  }//end function course_reg_one_form_submit($form, &$form_state)

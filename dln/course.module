@@ -1,0 +1,154 @@
+<?php
+
+/**
+ * Implementation of hook_block_info
+ */
+function course_block_info() 
+  {
+  $blocks['course']=array
+    (
+    'info' => t('DLN Course Info'),
+    'weight' => 1,
+    );
+  return($blocks); 
+  } // end function course_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function course_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "course":
+      $block['subject'] = t('Add a DLN Course');
+      $block['content'] = add_course();
+      break;
+      
+    default:
+      $block['subject'] = t('Add a DLN Course');
+      $block['content'] = add_course();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function course_block_view($delta="")
+  
+/**
+ * function to return doc_upload form
+ */
+function add_course() 
+  {
+  $content = drupal_get_form('course_form');
+  return($content);
+  } // end function add_course() 
+  
+/**
+ * implementation of hook_form
+ */
+function course_form($form, &$form_state)
+  {
+  $form['description']=array
+    (
+    '#type' => 'item',
+    '#title' => t('Add your course below. &nbsp;Items with an asterisk (*) are mandatory fields.'),
+    );
+  
+  $form['courseBlock'] = array
+    (
+    '#type' => 'fieldset',
+    '#title' => t('Course Details'),
+    //'#collapsible' => TRUE,
+    //'#collapsed' => FALSE,
+    );
+  
+  $form['courseBlock']['course_title'] = array
+    (
+    '#type' => 'textfield',
+    '#title' => t('Course Title'),
+    '#required' => TRUE,
+    '#description' => t('Enter the title of the course here'),
+    );
+  
+  $form['courseBlock']['course_number'] = array
+    (
+    '#type' => 'textfield',
+    '#title' => t('Course Number'),
+    '#required' => FALSE,
+    '#description' => t('Enter the assigned number of the course here'),
+    );
+  
+  $form['courseBlock']['course_desc'] = array
+    (
+    '#type' => 'textarea',
+    '#title' => t('Course Description'),
+    '#description' => t('Enter the details of this course.'),
+    '#required' => TRUE,
+    );
+  
+  $form['courseBlock']['course_link'] = array
+    (
+    '#type' => 'textfield',
+    '#title' => t('Course Page Link'),
+    '#required' => FALSE,
+    '#description' => t('Enter the page link of the course here'),
+    );
+  
+  $form['submit'] = array
+    (
+    '#type' => 'submit',
+    '#value' => t('Submit'), 
+    );
+  return($form);
+  }// end function course_form($form, &$form_state)
+  
+/**
+ * implementation of hook_form_validate
+ */
+function course_form_validate($form,&$form_state)
+  {
+  $title = check_plain($form['courseBlock']['course_title']['#value']);
+  if(strlen($title)<2)
+    form_set_error('course_title',t('Course Title is too short.'));
+  
+  $desc = check_plain($form['courseBlock']['course_desc']['#value']);
+  if(strlen($desc)<2)
+    form_set_error('course_desc',t('Course Description is too short.'));
+  
+  }//end function course_form_validate($form,&$form_state)
+  
+/**
+ * Implementation of hook_form_submit
+ */
+function course_form_submit($form, &$form_state)
+  {
+  $title = check_plain($form['courseBlock']['course_title']['#value']);
+  $link = check_plain($form['courseBlock']['course_link']['#value']);
+  $desc = check_plain($form['courseBlock']['course_desc']['#value']);
+  $number = check_plain($form['courseBlock']['course_number']['#value']);
+  
+  //insert into courses table
+  $result=db_insert('dln_course')
+    ->fields(array(
+      'course_title',
+      'course_description',
+      'course_link',
+      'course_number',
+      'org_id',
+      ))
+    ->values(array(
+      'course_title'=>$title,
+      'course_description'=>$desc,
+      'course_link' => $link,
+      'course_number'=>$number,
+      'org_id'=>1,
+      ))
+    ->execute();
+    
+  //get the last inserted id
+  $result=db_query("SELECT course_id FROM dln_course ORDER BY course_id DESC LIMIT 1");
+  $row=$result->fetchAssoc();
+  extract($row);
+ 
+  drupal_set_message("Course is added.");
+  }//end function course_form_submit($form, &$form_state)

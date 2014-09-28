@@ -1,0 +1,94 @@
+<?php
+// $Id: instructor_display.module Exp $
+
+/**
+ * Implementation of hook_block_info
+ */
+function instructor_display_block_info() 
+  {
+  $blocks['instructor_display']=array
+    (
+    'info' => t('Display DLN Instructors'),
+    'weight' => 1,
+    );
+  return($blocks); 
+  } // end function instructor_display_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function instructor_display_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "instructor_display":
+      $block['subject'] = t('Display DLN Instructors');
+      $block['content'] = instructor_display();
+      break;
+      
+    default:
+      $block['subject'] = t('Display DLN Instructors');
+      $block['content'] = instructor_display();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function instructor_display_block_view($delta="")
+  
+/**
+ * function to return event details
+ */
+function instructor_display()
+  {
+  $content = "";
+
+  $result=db_query("SELECT * FROM `dln_instructor`");
+  //if there's no event data
+  if(count($result)==0) 
+    $content = "No records available.";
+  else // there's event data
+    {
+    
+    //Create array of results
+    $dataFields=array();
+    while($row = $result -> fetchAssoc())
+      {
+      extract($row);
+      $result2 = db_query("SELECT loc_name from dln_location WHERE loc_id='$instr_loc'");
+      $row2 = $result2 -> fetchAssoc();
+      extract($row2);
+      $result3 = db_query("SELECT studio_name from dln_studio WHERE studio_id='$instr_studio'");
+      $row3 = $result3 -> fetchAssoc();
+      extract($row3);
+      $dataFields[]=array($instr_name,$instr_email,$loc_name,$studio_name,'<form method="post" action="edit-instructor"><input type="hidden" name="id" value="'.$instr_id.'"><input type="submit" value="Edit"></form>','<form method="post" action="assign-courses"><input type="hidden" name="instr_ID" value="'.$instr_id.'"><input type="submit" value="Edit"></form>');
+      } 
+
+    //headers for the table
+    $headers = array('Instructor Name','Instructor Email','Location','Studio','Edit?','Courses');
+
+    $content .= "<table border=\"1\">\r\n";
+    //writing the table header
+    $content .= "<tr>";
+    foreach($headers as $header)
+      {
+      $content .= "<th>$header</th>";
+      }
+    $content .= "</tr>\r\n";
+
+    // Now, add data fields
+    foreach($dataFields as $dataField)
+      {
+    $content .= "<tr>";
+    foreach($dataField as $dataItem)
+      {
+      $content .= "<td>$dataItem</td>";
+      }
+    $pw = md5(date('Ddw'));
+    $content .= "</tr>\r\n";
+      }   
+
+    $content .= "</table>\r\n";
+    }// end else there's event data   
+  
+  return($content);
+  }//end function instructor_display()

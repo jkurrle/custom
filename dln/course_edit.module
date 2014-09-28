@@ -1,0 +1,149 @@
+<?php
+
+/**
+ * Implementation of hook_block_info
+ */
+function course_edit_block_info() 
+  {
+  $blocks['course_edit']=array
+    (
+    'info' => t('Edit DLN Course Info'),
+    'weight' => 1,
+    );
+  return($blocks); 
+  } // end function course_edit_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function course_edit_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "course":
+      $block['subject'] = t('Update a DLN Course');
+      $block['content'] = edit_course();
+      break;
+      
+    default:
+      $block['subject'] = t('Update a DLN Course');
+      $block['content'] = edit_course();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function course_edit_block_view($delta="")
+  
+/**
+ * function to return doc_upload form
+ */
+function edit_course() 
+  {
+  $content = drupal_get_form('course_edit_form');
+  return($content);
+  } // end function edit_course() 
+  
+/**
+ * implementation of hook_form
+ */
+function course_edit_form($form, &$form_state)
+  {
+  if(isset($_POST['id'])) $_SESSION['mydata']=array((int)$_POST['id']);
+  $results=db_query("SELECT * FROM dln_course WHERE course_id='".$_SESSION['mydata'][0]."'");
+  $row = $results -> fetchAssoc();
+  extract($row);
+
+  $form['description']=array
+    (
+    '#type' => 'item',
+    '#title' => t('Update your course below. &nbsp;Items with an asterisk (*) are mandatory fields.'),
+    );
+  
+  $form['courseBlock'] = array
+    (
+    '#type' => 'fieldset',
+    '#title' => t('Course Details'),
+    //'#collapsible' => TRUE,
+    //'#collapsed' => FALSE,
+    );
+  
+  $form['courseBlock']['course_edit_title'] = array
+    (
+    '#type' => 'textfield',
+    '#title' => t('Course Title'),
+    '#default_value' => $course_title,
+    '#required' => TRUE,
+    '#description' => t('Enter the title of the course here'),
+    );
+  
+  $form['courseBlock']['course_edit_number'] = array
+    (
+    '#type' => 'textfield',
+    '#title' => t('Course Number'),
+    '#default_value' => $course_number,
+    '#required' => FALSE,
+    '#description' => t('Enter the assigned number of the course here'),
+    );
+  
+  $form['courseBlock']['course_edit_desc'] = array
+    (
+    '#type' => 'textarea',
+    '#title' => t('Course Description'),
+    '#default_value' => $course_description,
+    '#description' => t('Enter the details of this course.'),
+    '#required' => TRUE,
+    );
+  
+  $form['courseBlock']['course_edit_link'] = array
+    (
+    '#type' => 'textfield',
+    '#title' => t('Course Page Link'),
+    '#default_value' => $course_link,
+    '#required' => FALSE,
+    '#description' => t('Enter the page link of the course here'),
+    );
+  
+  $form['submit'] = array
+    (
+    '#type' => 'submit',
+    '#value' => t('Submit'), 
+    );
+  return($form);
+  }// end function course_edit_form($form, &$form_state)
+  
+/**
+ * implementation of hook_form_validate
+ */
+function course_edit_form_validate($form,&$form_state)
+  {
+  $title = check_plain($form['courseBlock']['course_edit_title']['#value']);
+  if(strlen($title)<2)
+    form_set_error('course_edit_title',t('Course Title is too short.'));
+  
+  $desc = check_plain($form['courseBlock']['course_edit_desc']['#value']);
+  if(strlen($desc)<2)
+    form_set_error('course_edit_desc',t('Course Description is too short.'));
+  
+  }//end function course_edit_form_validate($form,&$form_state)
+  
+/**
+ * Implementation of hook_form_submit
+ */
+function course_edit_form_submit($form, &$form_state)
+  {
+  $title = check_plain($form['courseBlock']['course_edit_title']['#value']);
+  $link = check_plain($form['courseBlock']['course_edit_link']['#value']);
+  $desc = check_plain($form['courseBlock']['course_edit_desc']['#value']);
+  $number = check_plain($form['courseBlock']['course_edit_number']['#value']);
+  
+  //insert into courses table
+  $result=db_query("UPDATE dln_course SET
+      course_title = '$title',
+      course_description = '$desc',
+      course_link = '$link',
+      course_number = '$number',
+      org_id = '1'
+      WHERE course_id='".$_SESSION['mydata'][0]."'");
+    
+  drupal_set_message("Course is updated.");
+  }//end function course_edit_form_submit($form, &$form_state)

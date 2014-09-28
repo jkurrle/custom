@@ -1,0 +1,5 @@
+; $Id: studio_edit.info, v 1.0.0.0 2014/09/04 10:30:00 JKurrle Exp $
+name = "Edit Studio Info (DLN)"
+description = "Edit DLN Studio Info"
+core = "7.x"
+package = "DLN"

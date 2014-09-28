@@ -1,0 +1,5 @@
+; $Id: grade_range_delete.info, v 1.0.0.0 2014/09/04 10:30:00 JKurrle Exp $
+name = "Delete Grade Range (DLN)"
+description = "Delete DLN Grade Range"
+core = "7.x"
+packgrade = "DLN"

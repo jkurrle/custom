@@ -1,0 +1,5 @@
+; $Id: dln_admin_delete.info, v 1.0.0.0 2014/09/04 10:30:00 JKurrle Exp $
+name = "Delete Administrator (DLN)"
+description = "Delete DLN Administrator"
+core = "7.x"
+package = "DLN"

@@ -1,0 +1,76 @@
+<?php
+// $Id: event_type_display.module Exp $
+
+/**
+ * Implementation of hook_block_info
+ */
+function event_type_display_block_info() 
+  {
+  $blocks['event_type_display']=array
+    (
+    'info' => t('Event Type Display'),
+    'weight' => 5,
+    );
+  return($blocks); 
+  } // end function event_type_display_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function event_type_display_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "event_type_display":
+      $block['subject'] = t('Event Type Display');
+      $block['content'] = event_type_display();
+      break;
+      
+    default:
+      $block['subject'] = t('Event Type Display');
+      $block['content'] = event_type_display();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function event_type_display_block_view($delta="")
+  
+/**
+ * Function to return a list of extensions
+ */
+function event_type_display()
+  {
+  //load supporting css
+  drupal_add_css(drupal_get_path('module','doc_upload')."/css/doc_display.css");
+  
+  $content = "The following event types are already available:<br />";
+  
+  //$counter helps determine which color to display in the div
+  $counter=0;
+
+  //get the list of extensions
+  $result=db_query("SELECT * FROM event_type");
+  
+  while ($row=$result->fetchAssoc())
+    {
+    extract($row);
+    $counter++;
+    if($counter%2==1)
+      $content .= "<div class=\"fileLineA\">\r\n";
+    else
+      $content .= "<div class=\"fileLineB\">\r\n";
+    $content .= "<div class=\"leftSide\">\r\n";
+    $content .= "$event_type<br />$type_description\r\n";
+    $content .= "</div><!-- end div leftSide-->";
+    $content .= "<div class=\"rightSide\">";
+    $content .= "<form method=\"post\" action=\"".drupal_get_path('module','serts_calendar')."/type_delete.php\">";
+    $content .= "<input type=\"hidden\" name=\"eventType\" value=\"$event_type\" />";
+    $content .= "<input type=\"image\" src=\"".drupal_get_path('module','doc_upload')."/images/delete.png\" title=\"Delete this Extension\" />";
+    $content .= "</form>";
+    $content .= "</div><!-- end div rightSide -->";
+    $content .= "</div><!-- end div fileLineX -->";
+    $content .= "<div style=\"clear:both;\"></div>";
+    }// end while ($row=$result->fetchAssoc())
+  
+  return($content);
+  }//end function event_type_display()

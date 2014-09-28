@@ -1,0 +1,157 @@
+<?php
+
+/**
+ * Implementation of hook_block_info
+ */
+function dln_admin_edit_block_info() 
+  {
+  $blocks['dln_admin_edit']=array
+    (
+    'info' => t('Update DLN Administrator'),
+    'weight' => 1,
+    );
+  return($blocks); 
+  } // end function dln_admin_edit_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function dln_admin_edit_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "dln_admin":
+      $block['subject'] = t('Update a DLN Administrator');
+      $block['content'] = edit_dln_administrator();
+      break;
+      
+    default:
+      $block['subject'] = t('Update a DLN Administrator');
+      $block['content'] = edit_dln_administrator();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function dln_admin_edit_block_view($delta="")
+  
+/**
+ * function to return dln_administrator form
+ */
+function edit_dln_administrator() 
+  {
+  $content = drupal_get_form('dln_admin_edit_form');
+  return($content);
+  } // end function edit_dln_administrator() 
+  
+/**
+ * implementation of hook_form
+ */
+function dln_admin_edit_form($form, &$form_state)
+  {
+  if(isset($_POST['id'])) $_SESSION['mydata']=array((int)$_POST['id']);
+  $result=db_query("SELECT * FROM dln_admin WHERE admin_id='".$_SESSION['mydata'][0]."'");
+  $row = $result -> fetchAssoc();
+  extract($row);
+
+  $form['description']=array
+    (
+    '#type' => 'item',
+    '#title' => t('Update your dln_administrator below. &nbsp;Items with an asterisk (*) are mandatory fields.'),
+    );
+  
+  $form['dln_administratorBlock'] = array
+    (
+    '#type' => 'fieldset',
+    '#title' => t('Administrator Details'),
+    //'#collapsible' => TRUE,
+    //'#collapsed' => FALSE,
+    );
+  
+  $form['dln_administratorBlock']['dln_admin_edit_name'] = array
+    (
+    '#type' => 'textfield',
+    '#title' => t('Administrator Full Name'),
+    '#default_value' => $admin_name,
+    '#required' => TRUE,
+    '#description' => t('Enter the name of the dln_administrator here'),
+    );
+  
+  $form['dln_administratorBlock']['dln_admin_edit_email'] = array
+    (
+    '#type' => 'textfield',
+    '#title' => t('Administrator Email'),
+    '#default_value' => $admin_email,
+    '#description' => t('Enter the email of this dln_administrator.'),
+    '#required' => TRUE,
+    );
+  
+  $optionsArray = array();
+  $results = db_query("SELECT * FROM dln_location");
+  while($row = $results -> fetchAssoc())
+    {
+    extract($row);
+    $optionsArray[$loc_id] = $loc_name;
+    }
+  $form['dln_administratorBlock']['dln_admin_edit_loc']=array
+    (
+    '#type' => 'select',
+    '#title' => t('Location of Administrator'),
+    '#options' => $optionsArray,
+    '#default_value' => $admin_loc,
+    '#description' => t('Select where the dln_administrator is located.'),
+    );
+  
+  $form['submit'] = array
+    (
+    '#type' => 'submit',
+    '#value' => t('Submit'), 
+    );
+  return($form);
+  }// end function dln_admin_edit_form($form, &$form_state)
+  
+/**
+ * implementation of hook_form_validate
+ */
+function dln_admin_edit_form_validate($form,&$form_state)
+  {
+  $name= check_plain($form['dln_administratorBlock']['dln_admin_edit_name']['#value']);
+  if(strlen($name)<2)
+    form_set_error('dln_admin_edit_name',t('Administrator Name is too short.'));
+  
+  $contactEmail = check_plain($form['dln_administratorBlock']['dln_admin_edit_email']['#value']);
+  if($contactEmail != NULL)
+    {
+    $test1=explode("@",$contactEmail);
+    if(count($test1) != 2) form_set_error('dln_admin_edit_email',t('Incorrect email format.'));
+    else
+      {
+      $test2=explode(".",$test1[1]);
+      if(count($test2) != 2) form_set_error('dln_admin_edit_email',t('Incorrect email format.'));
+      }
+    }
+  else
+    {
+    form_set_error('dln_admin_edit_email', t('Administrator email is required.'));
+    }
+  }//end function dln_admin_edit_form_validate($form,&$form_state)
+  
+/**
+ * Implementation of hook_form_submit
+ */
+function dln_admin_edit_form_submit($form, &$form_state)
+  {
+
+  //getting the rest of the variables
+  $name=check_plain($form['dln_administratorBlock']['dln_admin_edit_name']['#value']);
+  $email=check_plain($form['dln_administratorBlock']['dln_admin_edit_email']['#value']);
+  $location=$form['dln_administratorBlock']['dln_admin_edit_loc']['#value'];
+
+  $result=db_query("UPDATE dln_admin SET
+      admin_name = '$name',
+      admin_email = '$email',
+      admin_loc = '$location',
+      org_id = '1'
+      WHERE admin_id='".$_SESSION['mydata'][0]."'");
+    
+  drupal_set_message("Administrator is updated.");
+  }//end function dln_admin_edit_form_submit($form, &$form_state)

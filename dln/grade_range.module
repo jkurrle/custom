@@ -1,0 +1,133 @@
+<?php
+// $Id: grade_range.module Exp $
+
+/**
+ * Implementation of hook_block_info
+ */
+function grade_range_block_info() 
+  {
+  $blocks['grade_range']=array
+    (
+    'info' => t('DLN Grade Range'),
+    'weight' => 1,
+    );
+  return($blocks); 
+  } // end function grade_range_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function grade_range_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "grade_range":
+      $block['subject'] = t('Add a DLN Grade Range');
+      $block['content'] = add_grade_range();
+      break;
+      
+    default:
+      $block['subject'] = t('Add a DLN Grade Range');
+      $block['content'] = add_grade_range();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function grade_range_block_view($delta="")
+  
+/**
+ * function to return grade range form
+ */
+function add_grade_range() 
+  {
+  $content = drupal_get_form('grade_range_form');
+  return($content);
+  } // end function add_grade range() 
+  
+/**
+ * implementation of hook_form
+ */
+function grade_range_form($form, &$form_state)
+  {
+  $form['description']=array
+    (
+    '#type' => 'item',
+    '#title' => t('Add your grade range below. &nbsp;Items with an asterisk (*) are mandatory fields.'),
+    );
+  
+  $form['grade_rangeBlock'] = array
+    (
+    '#type' => 'fieldset',
+    '#title' => t('Grade Range Details'),
+    //'#collapsible' => TRUE,
+    //'#collapsed' => FALSE,
+    );
+  
+  $form['grade_rangeBlock']['min_grade'] = array
+    (
+    '#type' => 'textfield',
+    '#title' => t('Minimum Grade Range'),
+    '#required' => TRUE,
+    '#description' => t('Enter the minimum grade of the range here (number)'),
+    );
+  
+  $form['grade_rangeBlock']['max_grade'] = array
+    (
+    '#type' => 'textfield',
+    '#title' => t('Maximum Grade Range'),
+    '#required' => TRUE,
+    '#description' => t('Enter the maximum grade of the range here (number)'),
+    );
+  
+  $form['submit'] = array
+    (
+    '#type' => 'submit',
+    '#value' => t('Submit'), 
+    );
+  return($form);
+  }// end function grade_range_form($form, &$form_state)
+  
+/**
+ * implementation of hook_form_validate
+ */
+function grade_range_form_validate($form,&$form_state)
+  {
+  $min = $form['grade_rangeBlock']['min_grade']['#value'];
+  if((int)$min==NULL)
+    form_set_error('min_grade',t('Minimum Grade Required.'));
+  
+  $max = $form['grade_rangeBlock']['max_grade']['#value'];
+  if((int)$max==NULL)
+    form_set_error('max_grade',t('Maximum Grade Required.'));
+  
+  }//end function grade_range_form_validate($form,&$form_state)
+  
+/**
+ * Implementation of hook_form_submit
+ */
+function grade_range_form_submit($form, &$form_state)
+  {
+  //getting the rest of the variables
+  $min = (int)$form['grade_rangeBlock']['min_grade']['#value'];
+  $max = (int)$form['grade_rangeBlock']['max_grade']['#value'];
+  
+  //insert into grade range table
+  $result=db_insert('dln_grade_range')
+    ->fields(array(
+      'min_grade',
+      'max_grade',
+      'org_id',))
+    ->values(array(
+      'min_grade'=>$min,
+      'max_grade'=>$max,
+      'org_id'=>1,
+      ))
+    ->execute();
+    
+  //get the last inserted id
+  $result=db_query("SELECT grade_range_id FROM dln_grade_range ORDER BY grade_range_id DESC LIMIT 1");
+  $row=$result->fetchAssoc();
+  extract($row);
+ 
+  drupal_set_message("Grade Range is added.");
+  }//end function grade_range_form_submit($form, &$form_state)

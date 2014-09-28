@@ -1,0 +1,100 @@
+<?php
+
+/**
+ * Implementation of hook_block_info
+ */
+function categories_delete_block_info() 
+  {
+  $blocks['categories_delete']=array
+    (
+    'info' => t('Delete DLN Category'),
+    'weight' => 1,
+    );
+  return($blocks); 
+  } // end function categories_delete_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function categories_delete_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "categories_delete":
+      $block['subject'] = t('Delete a DLN Category');
+      $block['content'] = add_categories_delete();
+      break;
+      
+    default:
+      $block['subject'] = t('Delete a DLN Category');
+      $block['content'] = add_categories_delete();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function categories_delete_block_view($delta="")
+  
+/**
+ * function to return doc_upload form
+ */
+function add_categories_delete() 
+  {
+  $content = drupal_get_form('categories_delete_form');
+  return($content);
+  } // end function add_categories_delete() 
+  
+/**
+ * implementation of hook_form
+ */
+function categories_delete_form($form, &$form_state)
+  {
+  $form['description']=array
+    (
+    '#type' => 'item',
+    '#title' => t('Delete your categories below. &nbsp;Items with an asterisk (*) are mandatory fields.'),
+    );
+  
+  $form['categories_deleteBlock'] = array
+    (
+    '#type' => 'fieldset',
+    '#title' => t('Category to Delete'),
+    //'#collapsible' => TRUE,
+    //'#collapsed' => FALSE,
+    );
+  
+  $optionsArray = array();
+  $results = db_query("SELECT * FROM dln_categories");
+  while($row = $results -> fetchAssoc())
+    {
+    extract($row);
+    $optionsArray[$cat_id] = $cat_name;
+    }
+  $form['categories_deleteBlock']['categories_id']=array
+    (
+    '#type' => 'select',
+    '#title' => t('Category to Delete'),
+    '#options' => $optionsArray,
+    '#description' => t('Select the category to delete.'),
+    );
+
+  $form['submit'] = array
+    (
+    '#type' => 'submit',
+    '#value' => t('DELETE'), 
+    );
+  return($form);
+  }// end function categories_delete_form($form, &$form_state)
+  
+  
+/**
+ * Implementation of hook_form_submit
+ */
+function categories_delete_form_submit($form, &$form_state)
+  {
+  $id = $form['categories_deleteBlock']['categories_id']['#value'];
+  
+  //insert into categories_deletes table
+  $result=db_query("DELETE from dln_categories WHERE cat_id='$id'");
+ 
+  drupal_set_message("Category is deleted.");
+  }//end function categories_delete_form_submit($form, &$form_state)

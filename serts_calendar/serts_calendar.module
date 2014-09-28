@@ -1,0 +1,575 @@
+<?php
+// $Id: serts_calendar.module Exp $
+
+/**
+ * Implementation of hook_block_info
+ */
+function serts_calendar_block_info() 
+  {
+  $blocks['serts_calendar']=array
+    (
+    'info' => t('SERTS Calendar Display'),
+    'weight' => 5,
+    );
+  return($blocks); 
+  } // end function serts_calendar_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function serts_calendar_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "serts_calendar":
+      $block['subject'] = t('SERTS Calendar');
+      $block['content'] = serts_calendar();
+      break;
+      
+    default:
+      $block['subject'] = t('SERTS Calendar');
+      $block['content'] = serts_calendar();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function serts_calendar_block_view($delta="")
+
+/**
+ * Function to return the complete calendar
+ */
+function serts_calendar()
+  {
+  //determine the view type
+  if(!isset($_REQUEST['view']))
+    $view='calendar';
+  else
+    $view=$_REQUEST['view'];
+  
+  //header code goes here
+  //calendar code goes here
+  if($view=='calendar')
+    $calendar=serts_calendar_display();
+  //event list code goes here
+  return($calendar);
+  }
+
+/**
+ * Function to return calendar display for a block
+ */
+function serts_calendar_display()
+  {
+  //load supporting css file
+  drupal_add_css(drupal_get_path('module','serts_calendar')."/css/serts_calendar.css");
+  
+  //load weekend suppression javascript
+  //drupal_add_js(drupal_get_path('module','serts_calendar')."/javascript/hideColumn.js");
+  
+  //load floating descriptions javascript
+  drupal_add_js(drupal_get_path('module','serts_calendar')."/javascript/boxover/boxover.js");
+  
+  //load global div hiding/showing javascript
+  drupal_add_js(drupal_get_path('module','serts_calendar')."/javascript/globalEvent.js");
+  
+  //get today's date-time 
+  $today=time(); 
+  
+  //check for a passed timestamp
+  if(isset($_GET['timestamp']))
+    {
+    $timestamp=$_GET['timestamp'];
+    $This_Month=date("F",$timestamp);
+    $This_Year=date("Y",$timestamp);
+    }
+  
+  //get the month to display, if no month to get, display this month 
+  if(isset($_GET['Month']))
+    $This_Month=$_GET['Month'];
+  elseif(!isset($This_Month))
+    $This_Month=date("F",$today); 
+  
+  //get the year to display, if no year to get, display this year 
+  if(isset($_GET['Year']))
+    $This_Year=$_GET['Year'];
+  elseif(!isset($This_Year))
+    $This_Year=date("Y",$today); 
+    
+  /**                                       **/
+  /** Section to compute goverment Holidays **/
+  /**                                       **/
+  $holidayArray=array();
+  
+  //New Year's Day - observed January 2nd, if 1st is Sunday
+  $NYD=strtotime("1 January $This_Year");
+  if(date("l",$NYD)=="Sunday")
+    {
+    $holidayArray['January'][1]="New Year's Day";
+    $holidayArray['January'][2]="New Year's Day (observed)";
+    }
+  elseif(date("l",$NYD)!="Saturday")
+    $holidayArray['January'][1]="New Year's Day";
+  
+  //MLK Day - 3rd Monday in January
+  for($i=15;$i<=21;$i++)
+    {
+    $testDate=strtotime("$i January $This_Year");
+    if(date("N",$testDate)==1)
+      $testDateSelected=$i;
+    }
+  $holidayArray['January'][$testDateSelected]="Martin Luther King, Jr. Day";
+  
+  //Washington's Birthday - observed 3rd Monday in February
+  for($i=15;$i<=21;$i++)
+    {
+    $testDate=strtotime("$i February $This_Year");
+    if(date("N",$testDate)==1)
+      $testDateSelected=$i;
+    }
+  $holidayArray['February'][$testDateSelected]="Washington's Birthday (observed)";
+  
+  //Memorial Day - Last Monday in May
+  for($i=25;$i<=31;$i++)
+    {
+    $testDate=strtotime("$i May $This_Year");
+    if(date("N",$testDate)==1)
+      $testDateSelected=$i;
+    }
+  $holidayArray['May'][$testDateSelected]="Memorial Day";
+  
+  //Independence Day - if on Sat, observed on 3rd.  If on Sun, observed on 5th
+  $iDay=strtotime("4 July $This_Year");
+  if(date("N",$iDay)==7)
+    {
+    $holidayArray['July'][4]="Independence Day";
+    $holidayArray['July'][5]="Independence Day (observed)";
+    }
+  elseif(date("N",$iDay)==6)
+    {
+    $holidayArray['July'][3]="Independence Day (observed)";
+    $holidayArray['July'][4]="Independence Day";
+    }
+  else
+    $holidayArray['July'][4]="Independence Day";
+    
+  //Labor Day - First Monday of September
+  for($i=1;$i<=7;$i++)
+    {
+    $testDate=strtotime("$i September $This_Year");
+    if(date("N",$testDate)==1)
+      $testDateSelected=$i;
+    }
+  $holidayArray['September'][$testDateSelected]="Labor Day";
+  
+  //Columbus Day - 2nd Monday of October
+  for($i=8;$i<=14;$i++)
+    {
+    $testDate=strtotime("$i October $This_Year");
+    if(date("N",$testDate)==1)
+      $testDateSelected=$i;
+    }
+  $holidayArray['October'][$testDateSelected]="Columbus Day";
+  
+  //Veterans Day - if the 11th is on Saturday, observed on 10th. If on Sunday, observed on 12th
+  $vDay=strtotime("11 November $This_Year");
+  if(date("l",$vDay)=="Sunday")
+    {
+    $holidayArray['November'][11]="Veterans Day";
+    $holidayArray['November'][12]="Veterans Day (observed)";
+    }
+  elseif(date("l",$vDay)=="Saturday")
+    {
+    $holidayArray['November'][10]="Veterans Day (observed)";
+    $holidayArray['November'][11]="Veterans Day";
+    }
+  else
+    $holidayArray['November'][11]="Veterans Day";
+    
+  //Thanksgiving - 4th Thursday in November
+  for($i=22;$i<=28;$i++)
+    {
+    $testDate=strtotime("$i November $This_Year");
+    if(date("N",$testDate)==4)
+      $testDateSelected=$i;
+    }
+  $holidayArray['November'][$testDateSelected]="Thanksgiving";
+  
+  //Christmas - if on Saturday, observed the 24th. If on Sunday, observed the 26th.
+  $cDay=strtotime("25 December $This_Year");
+  if(date("l",$cDay)=="Sunday")
+    {
+    $holidayArray['December'][25]="Christmas";
+    $holidayArray['December'][26]="Christmas (observed)";
+    }
+  elseif(date("l",$cDay)=="Saturday")
+    {
+    $holidayArray['December'][24]="Christmas (observed)";
+    $holidayArray['December'][25]="Christmas";
+    }
+  else
+    $holidayArray['December'][25]="Christmas";
+    
+  //New Years Redux - if Jan 1 is on a Saturday, Dec 31st is observed.
+  $nextYear=$This_Year+1;
+  $NYD=strtotime("1 January $nextYear");
+  if(date("l",$NYD)=="Saturday") 
+    $holidayArray['December'][31]="New Year's Day (observed)";
+  /**                                           **/
+  /** End section to compute goverment Holidays **/
+  /**                                           **/
+  
+  //set display date to the first day of the selected month and year 
+  $First_Day=strtotime("$This_Month 1 $This_Year"); 
+
+  // the next month is guaranteed to be 3,456,000 seconds (40 days) 
+  // from the first day of the selected month 
+  $Plus_Month=$First_Day+3456000; 
+
+  // the previous month is guaranteed to be 86,401 seconds (24:00:01 hrs) 
+  // less than the first day of the selected month 
+  $Minus_Month=$First_Day-86401; 
+
+  // show the previous and next months-years in text format 
+  $Next_Month=date("F",$Plus_Month); 
+  $Prev_Month=date("F",$Minus_Month); 
+  $Next_Year=date("Y",$Plus_Month); 
+  $Prev_Year=date("Y",$Minus_Month); 
+  
+  //initialize calendar display
+  $calendar ="";
+  
+  // now we draw the Calendar header as the start of an HTML table 
+  // we'll need to close it later with a </table> tag 
+  $calendar .= "
+    <div id=\"calendarTop\" class=\"calendarTopHeader\">\r\n
+      <div class=\"calendarDropDown\">\r\n
+        <form name=\"calendarChange\" id=\"calendarChange\" method=\"get\" action=\"\" onChange=\"document.calendarChange.submit()\">\r\n
+        &nbsp;&nbsp;Display Events for:
+          <select name=\"timestamp\" class=\"calendarSelect\">\r\n";
+  //figure out the next 12 months...
+  //start with current month and work forward by 31 day increments
+  $timestamp=strtotime(date("1 F Y",time()));
+  if($This_Month==date("F",$timestamp))
+    $calendar .= "<option value=\"$timestamp\" selected>".date("F Y",$timestamp)."</option>\r\n";
+  else
+    $calendar .= "<option value=\"$timestamp\">".date("F Y",$timestamp)."</option>\r\n";
+  for($i=1;$i<=11;$i++)
+    {
+    //add 31 days to the timestamp
+    $timestamp=$timestamp+2678400;
+    //get the month and year of the new timestamp
+    $newMonth=date("F",$timestamp);
+    $newYear=date("Y",$timestamp);
+    //to avoid creep, reset timestamp to the first day of the month
+    $timestamp=strtotime("1 $newMonth $newYear");
+    //now, write the option
+    if($This_Month==$newMonth)
+      $calendar .= "<option value=\"$timestamp\" selected>".date("F Y",$timestamp)."</option>\r\n";
+    else
+      $calendar .= "<option value=\"$timestamp\">".date("F Y",$timestamp)."</option>\r\n";
+    }
+  $calendar .="
+          </select>\r\n
+          <noscript><input type=\"submit\" value=\"Select\"></noscript>
+        </form>\r\n
+      </div><!-- end div class=\"calendarDropDown\" -->\r\n
+      <div class=\"calendarGlobalLocal\">\r\n
+        <div class=\"calendarOptions\">\r\n
+        <form>\r\n";
+$calendar .= "
+          <input id=\"personal\" type=\"radio\" name=\"GlobalLocal\" onclick=\"hideGlobalEvents();\" />Personal&nbsp;&nbsp;\r\n
+          <input id=\"global\" type=\"radio\" name=\"GlobalLocal\" checked onclick=\"showGlobalEvents();\" />Global&nbsp;&nbsp;\r\n";
+/*
+$calendar .= "
+          <input type=\"radio\" name=\"GlobalLocal\" onclick=\"changeClassNames('global','hidden');\">Personal</input>&nbsp;&nbsp;\r\n
+          <input type=\"radio\" name=\"GlobalLocal\" checked onclick=\"changeClassNames('hidden','global');\">Global</input>&nbsp;&nbsp;\r\n";
+/* qqq
+$calendar .= "
+          <input type=\"radio\" name=\"GlobalLocal\" onClick=\"document.getElementById('globalEvent').style.display='none';\">Personal</input>&nbsp;&nbsp;\r\n
+          <input type=\"radio\" name=\"GlobalLocal\" checked onClick=\"document.getElementById('globalEvent').style.display='block';\">Global</input>&nbsp;&nbsp;\r\n
+";
+*/
+        $calendar .= "
+        </form>\r\n
+        </div><!-- end div class=\"calendarOptions\" -->\r\n
+        <div class=\"calendarOptions\">\r\n
+        <!-- next two lines (with closing form tag at bottom) would suppress weekends, if the hideColumn.js file were loaded -->\r\n
+        <!-- form -->\r\n
+        <!-- input type=\"checkbox\" onclick=\"ShowHideField('Saturday', 'calendar', this);ShowHideField('Sunday', 'calendar', this)\" id=\"Field1\" checked=\"true\" >Show Weekends</input -->\r\n
+        </div><!-- end div class=\"calendarOptions\" -->\r\n
+      </div><!-- end div class=calendarGlobalLocal -->\r\n
+    </div><!-- end div id=\"calendarTopHeader\" class=\"calendarTopHeader\" -->\r\n
+    <div style=\"clear:both;\"></div>\r\n
+    <div class=\"calendarTotalContainer\">
+  ";
+  
+  $prevMonth="";
+  $nextMonth="";
+  $calendar .="
+    <div class=\"calendarNav\">\r\n
+      <div class=\"calendarNavLeft\">\r\n
+        <a href='?Month=$Prev_Month&Year=$Prev_Year'>&nbsp;<< $Prev_Month $Prev_Year</a> \r\n
+      </div>\r\n
+      <div class=\"calendarNavCenter\">\r\n
+        $This_Month $This_Year \r\n
+      </div>\r\n
+      <div class=\"calendarNavRight\">\r\n
+        <a href='?Month=$Next_Month&Year=$Next_Year'>$Next_Month $Next_Year >>&nbsp;</a> \r\n
+      </div>\r\n
+    </div><!-- end div class=calendarNav --> \r\n
+    <div style=\"clear:both\"></div>\r\n";
+  
+  $calendar .= "
+    <div class=\"calendarContainer\">\r\n
+    <table class=\"calendar\" id=\"calendar\">\r\n
+    <tr class=\"calendarHeader\"> \r\n
+      <th class=\"calendar\">Sunday</th> \r\n
+      <th class=\"calendar\">Monday</th> \r\n
+      <th class=\"calendar\">Tuesday</th> \r\n
+      <th class=\"calendar\">Wednesday</th> \r\n
+      <th class=\"calendar\">Thursday</th> \r\n
+      <th class=\"calendar\">Friday</th> \r\n
+      <th class=\"calendar\">Saturday</th> \r\n
+    </tr> \r\n
+    "; 
+  
+  //determine the number of days in February
+  if($This_Year%400==0) $febDays=29;
+  elseif($This_Year%100==0) $febDays=28;
+  elseif($This_Year%4==0) $febDays=29;
+  else $febDays=28;
+  
+  //How many days in the month?
+  $monthDaysArray=array
+    ("January"=>31, "February"=>$febDays, "March"=>31, "April"=>30, "May"=>31, "June"=>30,
+     "July"=>31, "August"=> 31, "September"=>30, "October"=>31, "November"=>30, "December"=>31);
+  $days=$monthDaysArray[$This_Month];
+  
+  //Next we determine what day of the week is the first day of the month 
+  $day="Sunday"; 
+  $daynum=strtotime("$This_Month 1 $This_Year"); 
+  $day=date("l",$daynum); 
+  
+  //Assign positions to days of week and identify the starting day 
+  $daysPositionArray=array
+    ("Monday"=>2,"Tuesday"=>3,"Wednesday"=>4,"Thursday"=>5,"Friday"=>6,"Saturday"=>7,"Sunday"=>1);
+  $startpos=$daysPositionArray[$day];
+  
+  //next we need to determine how many rows of seven columns we need 
+  $basenum=$startpos+$days-1; 
+  $rows=ceil($basenum/7); 
+  
+  //Next, we need to get all events for the month, in order
+  $startMonth=strtotime("1 $This_Month $This_Year");
+  $endMonth=strtotime("1 $Next_Month $Next_Year");
+  $daysResult=db_query("SELECT * FROM `events` 
+                        WHERE event_timestamp >= :startMonth 
+                        AND event_timestamp < :endMonth 
+                        ORDER BY event_timestamp",
+                        array(':startMonth'=>$startMonth,':endMonth'=>$endMonth));
+  $groupsArray=array();
+  $eventsArray=array();
+  while($row=$daysResult->fetchAssoc())
+    {
+    extract($row);
+    $eventsArray[]=array
+      (
+      'event_id'=>$event_id,
+      'event_title'=>$event_title,
+      'event_details'=>$event_details,
+      'event_timestamp'=>$event_timestamp,
+      'event_location'=>$event_location,
+      'event_type'=>$event_type,
+      'event_duration'=>$event_duration,
+      'contact_name'=>$contact_name,
+      'contact_phone'=>$contact_phone,
+      'contact_email'=>$contact_email,
+      'webinar'=>$webinar,
+      'event_groups'=>array(),
+      );
+    // now, we match the groups to the events
+    $lastArrayNum=count($eventsArray)-1;
+    $groupResult=db_query("SELECT * FROM event_group WHERE event_id='$event_id'");
+    while($row2 = $groupResult -> fetchAssoc())
+      {
+      extract($row2);
+      $eventsArray[$lastArrayNum]['event_groups'][]=$group_id;
+      }
+    }// end while($row=$daysResult->fetchAssoc())
+  
+  //Next, we draw the calendar body 
+  $rowcount="1"; 
+  $daycount="1"; 
+  $calendar_day=0; 
+  while ($rowcount<=$rows) 
+    { 
+    $calendar .= "<tr class=\"calendar\">\r\n"; 
+    $day_column=1; 
+    while ($day_column<=7) // for each of the 7 days of the week... 
+      {
+      //if it's column 1 or 7 it's Sunday or Saturday
+      if($day_column==1 || $day_column==7)
+        $calendar .= "<td class=\"calendarRowWeekend\">\r\n";
+      // else if there is a matching holiday this day, treat it as a holiday
+      elseif(isset($holidayArray[$This_Month][$calendar_day+1]) && $daycount>=$startpos)
+        $calendar .= "<td class=\"calendarRowHoliday\">\r\n";
+      //otherwise, treat it as a normal day
+      else
+        $calendar .= "<td class=\"calendarRow\">\r\n"; 
+      //blank boxes before month begins...
+      if ($daycount<$startpos) 
+        $calendar .= "&nbsp;"; 
+      //blank boxes after month ends
+      elseif (($daycount-$startpos+1)>$days) 
+        $calendar .= "&nbsp;"; 
+      else // it's a calendar day 
+        { 
+        $calendar_day=$calendar_day+1;
+        $calendar .= "<div>$calendar_day</div>\r\n";
+        //here, we retrieve events that match the corresponding day
+        foreach($eventsArray as $eventArray)
+          {
+          // if any events fall on this day...
+          if(date("j",$eventArray['event_timestamp'])==$calendar_day)
+            {
+            if($eventArray['event_location']=='')$eventArray['event_location']=t('Not Applicable');
+            $eventDate=date("j F Y",$eventArray['event_timestamp']);
+            $eventTime=date("g:ia",$eventArray['event_timestamp']);
+            $groups='';
+            $event_id=$eventArray['event_id'];
+            //get the names of the associated organic group codes
+            foreach($eventArray['event_groups'] as $groupItem)
+              {
+              $groupSplit=explode("|",$groupItem);
+              $groupItemResult=db_query("SELECT label FROM og WHERE gid='".$groupSplit[0]."' AND etid='".$groupSplit[1]."'");
+              $groupItemRow=$groupItemResult->fetchAssoc();
+              extract($groupItemRow);
+              $groups .= "$label, ";
+              }// end foreach($eventArray['event_groups'] as $groupItem)
+            $groups=substr($groups,0,-2);
+           /* 
+            //get my groups...
+            global $user;
+            $uid=$user->uid;
+            $userGroupResults=db_query("SELECT gid FROM og_membership WHERE etid=:user",array(':user'=>$uid));
+            $userGroups=array();
+            while($userGroupRow=$userGroupResults->fetchAssoc())
+              {
+              extract($userGroupRow);
+              $userGroups[]=$gid;
+              }
+            
+            //get all functional group etids (which are the matching node ids)
+            $functionalGroups = array();
+            $functionalGroupResults=db_query("SELECT `nid` FROM node WHERE type=:functional",array(':functional'=>'functional_groups'));
+            while($functionalGroupRow=$functionalGroupResults->fetchAssoc())
+              {
+              extract($functionalGroupRow);
+              //get the matching Group ID
+              $groupIdResult=db_query("SELECT gid FROM og WHERE etid=:etid",array(':etid'=>$nid));
+              $groupIdRow=$groupIdResult->fetchAssoc();
+              extract($groupIdRow);
+              //assign the gid to the list
+              $functionalGroups[]=$gid;
+              }
+            
+	    //get the event group ids
+	    $eventGroups=array();
+	    foreach($eventArray['event_groups'] as $groupItem)
+	      {
+	      $groupSplit=explode("|",$groupItem);
+	      $eventGroups[]=$groupSplit[0];
+	      }
+	    
+	    // is it local, global or not displayed? 
+	    //assume it isn't displayed
+	    $displayIt="none";
+	    
+	    //if it matches any of my groups, set it to local
+	    foreach($eventGroups as $eventGroup)
+	      {
+	      foreach($userGroups as $userGroup)
+	        {
+	        if($userGroup==$eventGroup) $displayIt="local";
+	        }
+	      }
+            
+            //if if isn't a local group, test to see if it is a global group
+            if($displayIt!="local")
+              {
+              foreach($eventGroups as $eventGroup)
+                {
+                foreach($functionalGroups as $functionalGroup)
+                  {
+                  if($functionalGroup==$eventGroup) $displayIt="global";
+                  }
+                }
+              }
+            */
+$displayIt = "global";
+            //if it's a global event, display it with a globalEvent div wrapper
+            if($displayIt=="global")
+              {
+              if(!isset($globalNum)) $globalNum=1;
+              //display the link with extended title attributes
+	                  $calendar .= "<div id=\"globalEvent".$globalNum."\" class=\"global\"><a class=\"eventLink\" 
+	                                title=\"header=[Event Information] cssbody=[dvbdy1] cssheader=[dvhdr1] 
+	                                body=[<b>Event Title:</b> ".$eventArray['event_title']." (global)<br />
+	                                      <b>Event Type:</b> ".$eventArray['event_type']."<br>
+	                                      <b>Event Date:</b> $eventDate<br />
+	                                      <b>Event Time:</b> $eventTime<br />
+	                                      <b>Event Duration:</b> ".$eventArray['event_duration']."<br />
+	                                      <b>Event Location:</b> ".$eventArray['event_location']."<br />
+	                                      <b>Point of Contact: </b>".$eventArray['contact_name']."<br />
+	                                      <b>POC Phone Number: </b>".$eventArray['contact_phone']."<br />
+	                                      <b>POC Email: </b>".$eventArray['contact_email']."<br />
+	                                      <b>Assigned Groups:</b> $groups<br />
+	                                      <b>Event Details:</b> ".$eventArray['event_details']."<br />
+	                                      <b>Webinar Link: </b>".$eventArray['webinar']."<br />
+	                                  ]\"
+	                                href=\"event-details?event_id=$event_id\">&nbsp;".$eventArray['event_title']."</a></div>\r\n";
+	    $globalNum++;
+            }
+            
+            //if the event is local, display the event without the wrapper
+            if($displayIt=="local")
+              {
+              $calendar .= "<div class=\"personal\"><a class=\"eventLink\" 
+	                                title=\"header=[Event Information] cssbody=[dvbdy1] cssheader=[dvhdr1] 
+	                                body=[<b>Event Title:</b> ".$eventArray['event_title']." (local)<br />
+	                                      <b>Event Type:</b> ".$eventArray['event_type']."<br>
+	                                      <b>Event Date:</b> $eventDate<br />
+	                                      <b>Event Time:</b> $eventTime<br />
+	                                      <b>Event Duration:</b> ".$eventArray['event_duration']."<br />
+	                                      <b>Event Location:</b> ".$eventArray['event_location']."<br />
+	                                      <b>Point of Contact: </b>".$eventArray['contact_name']."<br />
+	                                      <b>POC Phone Number: </b>".$eventArray['contact_phone']."<br />
+	                                      <b>POC Email: </b>".$eventArray['contact_email']."<br />
+	                                      <b>Assigned Groups:</b> $groups<br />
+	                                      <b>Event Details:</b> ".$eventArray['event_details']."<br />
+	                                      <b>Webinar Link: </b>".$eventArray['webinar']."<br />
+	                                  ]\"
+	                                href=\"event-details?event_id=$event_id\">&nbsp;".$eventArray['event_title']."</a></div>\r\n";
+              }
+            }// end if(date("j",$eventArray['event_timestamp'])==$calendar_day)
+          }// end foreach($eventsArray as $eventArray)
+        // if this is a holiday, display the holiday info
+        if(isset($holidayArray[$This_Month][$calendar_day]))
+          {
+          $calendar .= "<div class=\"holidayText\">&nbsp;".$holidayArray[$This_Month][$calendar_day]."</div>\r\n";
+          }
+        } 
+      $daycount++; // advance a day in the calendar
+      $calendar .= "</td>\r\n"; 
+      $day_column++; // advance a day(column) in the row
+      } 
+    $calendar .= "</tr>\r\n"; 
+    $rowcount++; // advance a row in the calendar
+    } 
+  
+  //Finally, we finish the table 
+  $calendar .= "</table></div><!-- end div class=\"calendarContainer\" -->\r\n
+    <!-- /form --><!-- suppress weekend form close -->\r\n
+    </div><!-- end div class=\"calendarTotalContainer\" -->\r\n"; 
+  
+  return $calendar;
+  }// end function serts_calendar_display()

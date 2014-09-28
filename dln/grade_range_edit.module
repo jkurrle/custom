@@ -1,0 +1,128 @@
+<?php
+// $Id: grade_range.module Exp $
+
+/**
+ * Implementation of hook_block_info
+ */
+function grade_range_edit_block_info() 
+  {
+  $blocks['grade_range_edit']=array
+    (
+    'info' => t('Edit DLN Grade Range'),
+    'weight' => 1,
+    );
+  return($blocks); 
+  } // end function grade_range_edit_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function grade_range_edit_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "grade_range":
+      $block['subject'] = t('Update a DLN Grade Range');
+      $block['content'] = edit_grade_range();
+      break;
+      
+    default:
+      $block['subject'] = t('Update a DLN Grade Range');
+      $block['content'] = edit_grade_range();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function grade_range_edit_block_view($delta="")
+  
+/**
+ * function to return grade range form
+ */
+function edit_grade_range() 
+  {
+  $content = drupal_get_form('grade_range_edit_form');
+  return($content);
+  } // end function edit_grade range() 
+  
+/**
+ * implementation of hook_form
+ */
+function grade_range_edit_form($form, &$form_state)
+  {
+  if(isset($_POST['id'])) $_SESSION['mydata'] = array((int)$_POST['id']);
+  $result = db_query("SELECT * FROM dln_grade_range WHERE grade_range_id='".$_SESSION['mydata'][0]."'");
+  $row = $result -> fetchAssoc();
+  extract($row);
+
+  $form['description']=array
+    (
+    '#type' => 'item',
+    '#title' => t('Update your grade range below. &nbsp;Items with an asterisk (*) are mandatory fields.'),
+    );
+  
+  $form['grade_rangeBlock'] = array
+    (
+    '#type' => 'fieldset',
+    '#title' => t('Grade Range Details'),
+    //'#collapsible' => TRUE,
+    //'#collapsed' => FALSE,
+    );
+  
+  $form['grade_rangeBlock']['min_grade'] = array
+    (
+    '#type' => 'textfield',
+    '#title' => t('Minimum Grade Range'),
+    '#default_value' => $min_grade,
+    '#required' => TRUE,
+    '#description' => t('Enter the minimum grade of the range here (number)'),
+    );
+  
+  $form['grade_rangeBlock']['max_grade'] = array
+    (
+    '#type' => 'textfield',
+    '#title' => t('Maximum Grade Range'),
+    '#default_value' => $max_grade,
+    '#required' => TRUE,
+    '#description' => t('Enter the maximum grade of the range here (number)'),
+    );
+  
+  $form['submit'] = array
+    (
+    '#type' => 'submit',
+    '#value' => t('Submit'), 
+    );
+  return($form);
+  }// end function grade_range_edit_form($form, &$form_state)
+  
+/**
+ * implementation of hook_form_validate
+ */
+function grade_range_edit_form_validate($form,&$form_state)
+  {
+  $min = $form['grade_rangeBlock']['min_grade']['#value'];
+  if((int)$min==NULL)
+    form_set_error('min_grade',t('Minimum Grade Required.'));
+  
+  $max = $form['grade_rangeBlock']['max_grade']['#value'];
+  if((int)$max==NULL)
+    form_set_error('max_grade',t('Maximum Grade Required.'));
+  
+  }//end function grade_range_edit_form_validate($form,&$form_state)
+  
+/**
+ * Implementation of hook_form_submit
+ */
+function grade_range_edit_form_submit($form, &$form_state)
+  {
+  //getting the rest of the variables
+  $min = (int)$form['grade_rangeBlock']['min_grade']['#value'];
+  $max = (int)$form['grade_rangeBlock']['max_grade']['#value'];
+  
+  $result=db_query("UPDATE dln_grade_range SET
+      min_grade = '$min',
+      max_grade = '$max',
+      org_id = '1'
+      WHERE grade_range_id='".$_SESSION['mydata'][0]."'");
+    
+  drupal_set_message("Grade Range is edited.");
+  }//end function grade_range_edit_form_submit($form, &$form_state)

@@ -1,0 +1,155 @@
+<?php
+/**
+ * @file
+ * Install and uninstall functions for serts_calendar module
+ */
+ 
+/**
+ * Implementation of hook_schema()
+ */
+function serts_calendar_schema()
+  {
+  $schema['event_type']=array
+    (
+    'description'=>t('Types of Events'),
+    'fields'=>array
+      (
+      'event_type'=>array
+        (
+        'description'=>t('Type of Event'),
+        'type'=>'varchar',
+        'not null'=>TRUE,
+        'length'=>50,
+        ),
+      'type_description'=>array
+        (
+        'description'=>t('Description of the Event Type'),
+        'type'=>'varchar',
+        'length'=>300,
+        'not null'=>TRUE,
+        ),
+      ),
+    'indexes'=>array('event_type'=>array('event_type')),
+    'primary key'=>array('event_type'),
+    );
+    
+  $schema['events']=array
+    (
+    'description'=>t('Table of Events'),
+    'fields'=>array
+      (
+      'event_id'=>array
+        (
+        'type'=>'serial',
+        'not null'=>TRUE,
+        ),
+      'event_title'=>array
+        (
+        'description'=>t('Title of the Event'),
+        'type'=>'varchar',
+        'not null'=>TRUE,
+        'length'=>200,
+        ),
+      'event_details'=>array
+        (
+        'description'=>t('Details of the Event'),
+        'type'=>'varchar',
+        'length'=>500,
+        ),
+      'event_timestamp'=>array
+        (
+        'description'=>t('Date and Time of Event'),
+        'type'=>'int',
+        'not null'=>TRUE,
+        ),
+      'event_location'=>array
+        (
+        'description'=>t('Location of the Event'),
+        'type'=>'varchar',
+        'length'=>200,
+        ),
+      'event_type'=>array
+        (
+        'description'=>t('Type of Event'),
+        'type'=>'varchar',
+        'length'=>100,
+        'not null'=>TRUE,
+        ),
+      'event_duration'=>array
+        (
+        'description'=>t('Duration of the Event'),
+        'type'=>'varchar',
+        'length'=>100,
+        ),
+      'contact_name'=>array
+        (
+        'description'=>t('Point of Contact'),
+        'type'=>'varchar',
+        'length'=>'300',
+        'not null'=>TRUE,
+        ),
+      'contact_email'=>array
+        (
+        'description'=>t('POC Email'),
+        'type'=>'varchar',
+        'length'=>300,
+        ),
+      'contact_phone'=>array
+        (
+        'description'=>t('POC Phone Number'),
+        'type'=>'varchar',
+        'length'=>'24',
+        ),
+      'webinar'=>array
+        (
+        'description'=>t('Webinar Link'),
+        'type'=>'varchar',
+        'length'=>300,
+        ),
+      ),
+    'primary key'=>array('event_id'),
+    'indexes'=>array('event_timestamp'=>array('event_timestamp'),'event_type'=>array('event_type')),
+    );
+  
+  $schema['event_group']=array
+    (
+    'description'=>t('Table matching organic groups to event IDs'),
+    'fields'=>array
+      (
+      'event_id'=>array
+        (
+        'description'=>t('Event ID from Events table'),
+        'type'=>'int',
+        ),
+      'group_id'=>array
+        (
+        'description'=>t('Organic group this event is related to'),
+        'type'=>'varchar',
+        'length'=>20,
+        ),
+      ),
+    'indexes'=>array('index1'=>array('event_id','group_id')),
+    );
+  
+  return($schema);
+  }// end function serts_calendar_schema()
+  
+/**
+ * Implementation of hook_install
+ */
+function serts_calendar_install()
+  {
+  drupal_install_schema('event_type');
+  drupal_install_schema('events');
+  drupal_install_schema('event_group');
+  }// end function serts_calendar_install()
+  
+/**
+ * Implementation of hook_uninstall
+ */
+function serts_calendar_uninstall()
+  {
+  drupal_uninstall_schema('event_type');
+  drupal_uninstall_schema('events');
+  drupal_uninstall_schema('event_group');
+  }// end function serts_calendar_uninstall()

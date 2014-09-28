@@ -1,0 +1,95 @@
+<?php
+// $Id: studio_display.module Exp $
+
+/**
+ * Implementation of hook_block_info
+ */
+function studio_display_block_info() 
+  {
+  $blocks['studio_display']=array
+    (
+    'info' => t('Display DLN Studios'),
+    'weight' => 1,
+    );
+  return($blocks); 
+  } // end function studio_display_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function studio_display_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "studio_display":
+      $block['subject'] = t('Display DLN Studios');
+      $block['content'] = studio_display();
+      break;
+      
+    default:
+      $block['subject'] = t('Display DLN Studios');
+      $block['content'] = studio_display();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function studio_display_block_view($delta="")
+  
+/**
+ * function to return event details
+ */
+function studio_display()
+  {
+  $content = "";
+
+  $result=db_query("SELECT * FROM `dln_studio`");
+  //if there's no event data
+  if(count($result)==0) 
+    $content = "No records available.";
+  else // there's event data
+    {
+    
+    //Create array of results
+    $dataFields=array();
+    while($row = $result -> fetchAssoc())
+      {
+      extract($row);
+      $dataFields[]=array($studio_name,$studio_desc,$studio_id,$loc_id);
+      } 
+
+    //headers for the table
+    $headers = array('Studio Name','Studio Description','Location','Edit?');
+
+    $content .= "<table border=\"1\">\r\n";
+    //writing the table header
+    $content .= "<tr>";
+    foreach($headers as $header)
+      {
+      $content .= "<th>$header</th>";
+      }
+    $content .= "</tr>\r\n";
+
+    // Now, add data fields
+    foreach($dataFields as $dataField)
+      {
+      $loc_id=array_pop($dataField);
+      $id = array_pop($dataField);
+      $content .= "<tr>";
+      foreach($dataField as $dataItem)
+        {
+        $content .= "<td>$dataItem</td>";
+        }
+echo "<br /><br />Location ID is $loc_id <br /><br />";
+      $result2 = db_query("SELECT loc_name FROM dln_location WHERE loc_id='$loc_id'");
+      $row2 = $result2 -> fetchAssoc();
+      extract($row2);
+      $content .= "<td>$loc_name</td>";
+      $content .= "<td><form method=\"post\" action=\"edit-studio\"><input type=\"hidden\" name=\"id\" value=\"$id\" /><input type=\"submit\" value=\"Edit\" /></form></td>";
+      $content .= "</tr>\r\n";
+      }   
+
+    $content .= "</table>\r\n";
+    }// end else there's event data   
+  
+  return($content);
+  }//end function studio_display()

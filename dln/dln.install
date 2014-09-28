@@ -1,0 +1,730 @@
+<?php
+/**
+ * @file
+ * Install and uninstall functions for dln module
+ */
+ 
+/**
+ * Implementation of hook_schema()
+ */
+function dln_schema()
+  {
+  $schema['dln_org'] = array
+    (
+    'description' => t('Organization Doing the Training'),
+    'fields' => array
+      (
+      'org_id' => array
+        (
+        'description' => t('Organizational ID Number'),
+        'type' => 'serial',
+        'not null' => TRUE,
+        ),
+      'org_name' => array
+        (
+        'description' => t('Name of the Organization'),
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 80,
+        ),
+      'org_desc' => array
+        (
+        'description' => t('Description of the Organization'),
+        'type' => 'varchar',
+        'length' => 500,
+        ),  
+      ),
+    'indexes' => array('org_id' => array('org_id')),
+    'primary_key' => array('org_id'),
+    );
+
+  $schema['dln_categories'] = array
+    (
+    'description' => t('Categories of Courses'),
+    'fields' => array
+      (
+      'cat_id' => array
+        (
+        'description' => t('Category ID Number'),
+        'type' => 'serial',
+        'not null' => TRUE,
+        ),
+      'cat_name' => array
+        (
+        'description' => t('Name of the Category'),
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 80,
+        ),
+      'cat_desc' => array
+        (
+        'description' => t('Description of the Category'),
+        'type' => 'varchar',
+        'length' => 500,
+        ),  
+      'org_id' => array
+        (
+        'description' => t('Organization ID'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),  
+      ),
+    'indexes' => array('cat_id' => array('cat_id'), 'org_id' => array('org_id')),
+    'primary_key' => array('cat_id'),
+    );
+
+  $schema['dln_school'] = array
+    (
+    'description' => t(''),
+    'fields' => array
+      (
+      'school_id' => array
+        (
+        'description' => t('ID number of the school'),
+        'type' => 'serial',
+        'not null' => TRUE,
+        ),
+      'school_name'  => array
+        (
+        'description' => t('Name of the school'),
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 60,
+        ),
+      'school_state' => array
+        (
+        'description' => t('State or Territory the school is in'),
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 2,
+        ),
+      'school_address_1' => array
+        (
+        'description' => t('School address (line 1)'),
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'length' => 100,
+        ),
+      'school_address_2' => array
+        (
+        'description' => t('School address (line 2)'),
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'length' => 100,
+        ),
+      'school_zipcode' => array
+        (
+        'description' => t('School five digit zipcode'),
+        'type' => 'int',
+        'not null' => FALSE,
+        ),
+      'school_admin' => array
+        (
+        'description' => t('School Administrator - name'),
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'length' => 80,
+        ),
+      'school_admin_email' => array
+        (
+        'description' => t('School administrator - email'),
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'length' => 100,
+        ),
+      'org_id' => array
+        (
+        'description' => t('Organizational ID'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      ),
+    'indexes' => array('school_id' => array('school_id'), 'school_state' => array('school_state'), 'org_id' => array('org_id')),
+    'primary_key' => array('school_id'),
+    );
+
+  $schema['dln_teacher'] = array
+    (
+    'description' => t('Teacher of a classroom'),
+    'fields' => array
+      (
+      'teacher_id' => array
+        (
+        'description' => t('ID number of teacher'),
+        'type' => 'serial',
+        'not null' => TRUE,
+        ),
+      'teacher_name' => array
+        (
+        'description' => t('Full name of teacher'),
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 120,
+        ),
+      'teacher_email' => array
+        (
+        'description' => t('Email of teacher'),
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 120,
+        ),
+      'school_id' => array
+        (
+        'description' => t('ID number of school'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      'org_id' => array
+        (
+        'description' => t('Organization ID'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      ),
+    'indexes' => array('teacher_id' => array('teacher_id'), 'school_id' => array('school_id'), 'org_id' => array('org_id')),
+    'primary_key' => array('teacher_id'),
+    );
+
+  $schema['dln_session'] = array
+    (
+    'description' => t('Organizational Course Session'),
+    'fields' => array
+      (
+      'session_id' => array
+        (
+        'description' => t('Course session ID'),
+        'type' => 'serial',
+        'not null' => TRUE,
+        ),
+      'start_time' => array
+        (
+        'description' => t('Start time of the session'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      'session_duration' => array
+        (
+        'description' => t('Duration of the session, in minutes'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      'instructor_id' => array
+        (
+        'description' => t('ID number of the instructor for the session'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      'site_id' => array
+        (
+        'description' => t('ID number of the site where the session takes place'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      'studio_id' => array
+        (
+        'description' => t('ID number of the studio'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      'grade_range' => array
+        (
+        'description' => t('Grade Range of Students'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      'org_id' => array
+        (
+        'description' => t('Organizational ID'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      'course_id' => array
+        (
+        'description' => t('Numeric Identifier of the Course'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      ),
+    'indexes' => array('session_id' => array('session_id'), 'instructor_id' => array('instructor_id'), 'site_id' => array('site_id'), 'studio_id' => array('studio_id'), 'org_id' => array('org_id'), 'course_id' => array('course_id')),
+    'primary_key' => array('session_id'),
+    );
+
+  $schema['dln_location'] = array
+    (
+    'description' => t('Location or Center of Instruction'),
+    'fields' => array
+      (
+      'loc_id' => array
+        (
+        'description' => t('Location ID Number'),
+        'type' => 'serial',
+        'not null' => TRUE,
+        ),
+      'loc_name' => array
+        (
+        'description' => t('Location Name'),
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 60,
+        ),
+      'loc_desc' => array
+        (
+        'description' => t('Location Description'),
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 500,
+        ),
+      'boiler_acc' => array
+        (
+        'description' => t('Boilerplate Acceptance Letter'),
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'length' => 2000,
+        ),
+      'boiler_rej' => array
+        (
+        'description' => t('Boilerplate Rejection Letter'),
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'length' => 2000,
+        ),
+      'org_id' => array
+        (
+        'description' => t('Organizational ID'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      ),
+    'indexes' => array('loc_id' => array('loc_id'), 'org_id' => array('org_id')),
+    'primary_key' => array('loc_iD'),
+    );
+
+  $schema['dln_studio'] = array
+    (
+    'description' => t('Studios at a Location'),
+    'fields' => array
+      (
+      'studio_id' => array
+        (
+        'description' => t('Studio ID Number'),
+        'type' => 'serial',
+        'not null' => TRUE,
+        ),
+      'studio_name' => array
+        (
+        'description' => t('Studio Name'),
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 30,
+        ),
+      'studio_desc' => array
+        (
+        'description' => t('Studio Description'),
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 500,
+        ),
+      'loc_id' => array
+        (
+        'description' => t('Location of the Studio'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      'org_id' => array
+        (
+        'description' => t('Organizational ID'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      ),
+    'indexes' => array('studio_id' => array('studio_id'), 'loc_id' => array('loc_id'), 'org_id' => array('org_id')),
+    'primary_key' => array('studio_id'),
+    );
+
+  $schema['dln_instructor'] = array
+    (
+    'description' => t('Instructor of the Class'),
+    'fields' => array
+      (
+      'instr_id' => array
+        (
+        'description' => t('Instructor ID Number'),
+        'type' => 'serial',
+        'not null' => TRUE,
+        ),
+      'instr_name' => array
+        (
+        'description' => t('Instructor Full Name'),
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 100,
+        ),
+      'instr_email' => array
+        (
+        'description' => t('Instructor Email'),
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 100,
+        ),
+      'instr_loc' => array
+        (
+        'description' => t('Location of the instructor'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      'instr_studio' => array
+        (
+        'description' => t('Instructor Assigned Studio'),
+        'type' => 'int',
+        'not null' => FALSE,
+        ),
+      'start_time_1' => array
+        (
+        'description' => t('Instructor First Start Time'),
+        'type' => 'int',
+        'not null' => FALSE,
+        ),
+      'end_time_1' => array
+        (
+        'description' => t('Instructor First End Time'),
+        'type' => 'int',
+        'not null' => FALSE,
+        ),
+      'start_time_2' => array
+        (
+        'description' => t('Instructor Second Start Time'),
+        'type' => 'int',
+        'not null' => FALSE,
+        ),
+      'end_time_2' => array
+        (
+        'description' => t('Instructor Second End Time'),
+        'type' => 'int',
+        'not null' => FALSE,
+        ),
+      'time_zone' => array
+        (
+        'description' => t('Instructor Time Zone'),
+        'type' => 'int',
+        'not null' => FALSE,
+        ),
+      'org_id' => array
+        (
+        'description' => t('Organizational ID'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      ),
+    'indexes' => array('instr_id' => array('instr_id'), 'instr_loc' => array('instr_loc'), 'instr_studio' => array('instr_studio'), 'org_id' => array('org_id')),
+    'primary_key' => array('instr_id'),
+    );
+
+  $schema['dln_admin'] = array
+    (
+    'description' => t('Administrators Info'),
+    'fields' => array
+      (
+      'admin_id' => array
+        (
+        'description' => t('Administrator ID Number'),
+        'type' => 'serial',
+        'not null' => TRUE,
+        ),
+      'admin_name' => array
+        (
+        'description' => t('Administrator Full Name'),
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 100,
+        ),
+      'admin_email' => array
+        (
+        'description' => t('Administrator Email'),
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 200,
+        ),
+      'admin_loc' => array
+        (
+        'description' => t('Location of the Administrator - Zero is All'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      'org_id' => array
+        (
+        'description' => t('Organizational ID'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      ),
+    'indexes' => array('admin_id' => array('admin_id'), 'admin_loc' => array('admin_loc'), 'org_id' => array('org_id')),
+    'primary_key' => array('admin_id'),
+    );
+
+  $schema['dln_course'] = array
+    (
+    'description' => t('Course to be taught'),
+    'fields' => array
+      (
+      'course_id' => array
+        (
+        'description' => t('Number of the Course'),
+        'type' => 'serial',
+        'not null' => TRUE,
+        ),
+      'course_title' => array
+        (
+        'description' => t('Title of the Course'),
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 100,
+        'translatable' => TRUE,
+        ),
+      'course_description' => array
+        (
+        'description' => t('Detailed Description of the Course'),
+        'type' => 'text',
+        'not null' => FALSE,
+        'size' => 'big',
+        'translatable' => TRUE,
+        ),
+      'course_link' => array
+        (
+        'description' => t('HTML link to the Course Description Page'),
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'length' => 100,
+        'translatable' => TRUE,
+        ),
+      'course_number' => array
+        (
+        'description' => t('Public Facing Course Number'),
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'length' => 25,
+        ),
+      'org_id' => array
+        (
+        'description' => t('Organization ID'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      ),
+    'indexes' => array('course_id' => array('course_id'), 'org_id' => array('org_id')),
+    'primary_key' => array('course_id'),
+    );
+
+  $schema['dln_classroom'] = array
+    (
+    'description' => t('Attending Classroom Specifics'),
+    'fields' => array
+      (
+      'classroom_id' => array
+        (
+        'description' => t('ID Number of the Student Classroom'),
+        'type' => 'serial',
+        'not null' => TRUE,
+        ),
+      'org_id' => array
+        (
+        'description' => t('Organizational ID'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      'school_id' => array
+        (
+        'description' => t('School ID'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      'teacher_id' => array
+        (
+        'description' => t('Teacher ID Number'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      'class_size' => array
+        (
+        'description' => t('Size of the Classroom'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      'grade_range' => array
+        (
+        'description' => t('Grade Range of the Students'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      'class_date' => array
+        (
+        'description' => t('Date of Registered Class'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      'perm_class' => array
+        (
+        'description' => t('Is this class a permanent setting?'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'size' => 'tiny',
+        ),
+      ),
+    'indexes' => array('classroom_id' => array('classroom_id'), 'org_id' => array('org_id'), 'school_id' => array('school_id'), 'teacher_id' => array('teacher_id')),
+    'primary_key' => array('classroom_id'),
+    );
+
+  $schema['dln_session_slots'] = array
+    (
+    'description' => t('Available Slots for Each Session'),
+    'fields' => array
+      (
+      'session_id' => array
+        (
+        'description' => t('Session Number'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      'slot_id' => array
+        (
+        'description' => t('Slot Number'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'size' => 'small',
+        ),
+      'school_state' => array
+        (
+        'type' => 'varchar',
+        'length' => '2',
+        'not null' => TRUE,
+        'description' => t('State school resides in'),
+        ),
+      'school_name' => array
+        (
+        'type' => 'varchar',
+        'length' => '80',
+        'not null' => TRUE,
+        'description' => t('School Name'),
+        ),
+      'teacher_name' => array
+        (
+        'type' => 'varchar',
+        'length' => '80',
+        'not null' => TRUE,
+        'description' => t('Teacher Name'),
+        ),
+      'teacher_email' => array
+        (
+        'type' => 'varchar',
+        'length' => '100',
+        'not null' => TRUE,
+        'description' => t('Teacher Email'),
+        ),
+      'class_size' => array
+        (
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => t('Size of the class'),
+        ),
+      ),
+    'indexes' => array('session_id' => array('session_id')),
+    'primary_key' => array('session_id','slot_id'),
+    );
+
+  $schema['dln_grade_range'] = array
+    (
+    'description' => t('Grade Ranges for a Classroom'),
+    'fields' => array
+      (
+      'grade_range_id' => array
+        (
+        'description' => t('ID Number for Grade Range'),
+        'type' => 'serial',
+        'not null' => TRUE,
+        ),
+      'min_grade' => array
+        (
+        'description' => t('Minimum Grade of the Range'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      'max_grade' => array
+        (
+        'description' => t('Maximum Grade of the Range'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      'org_id' => array
+        (
+        'description' => t('Organization ID'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      ),
+    'indexes' => array('grade_range_id' => array('grade_range_id'), 'org_id' => array('org_id')),
+    'primary_key' => array('grade_range_id'),
+    );
+
+  $schema['dln_instr_course'] = array
+    (
+    'description' => t('Instructor - Course cross table'),
+    'fields' => array
+      (
+      'instr_id' => array
+        (
+        'description' => t('Instructor ID'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      'course_id' => array
+        (
+        'description' => t('Course ID'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      ), 
+    'indexes' => array('instr_id' => array('instr_id'), 'course_id' => array('course_id')),
+    );
+
+  return($schema);
+  }// end function dln_schema()
+  
+/**
+ * Implementation of hook_install
+ */
+function dln_install()
+  {
+  drupal_install_schema('dln_org');
+  drupal_install_schema('dln_school');
+  drupal_install_schema('dln_teacher');
+  drupal_install_schema('dln_session');
+  drupal_install_schema('dln_location');
+  drupal_install_schema('dln_studio');
+  drupal_install_schema('dln_instructor');
+  drupal_install_schema('dln_admin');
+  drupal_install_schema('dln_course');
+  drupal_install_schema('dln_classroom');
+  drupal_install_schema('dln_session_slots');
+  drupal_install_schema('dln_grade_ranges');
+  drupal_install_schema('dln_instr_course');
+  }// end function dln_install()
+  
+/**
+ * Implementation of hook_uninstall
+ */
+function dln_uninstall()
+  {
+  drupal_uninstall_schema('dln_org');
+  drupal_uninstall_schema('dln_school');
+  drupal_uninstall_schema('dln_teacher');
+  drupal_uninstall_schema('dln_session');
+  drupal_uninstall_schema('dln_location');
+  drupal_uninstall_schema('dln_studio');
+  drupal_uninstall_schema('dln_instructor');
+  drupal_uninstall_schema('dln_admin');
+  drupal_uninstall_schema('dln_course');
+  drupal_uninstall_schema('dln_classroom');
+  drupal_uninstall_schema('dln_session_slots');
+  drupal_uninstall_schema('dln_grade_ranges');
+  drupal_uninstall_schema('dln_instr_course');
+  }
+// end function dln_uninstall()

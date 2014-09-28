@@ -1,0 +1,92 @@
+<?php
+// $Id: event_display.module Exp $
+
+/**
+ * Implementation of hook_block_info
+ */
+function event_display_block_info() 
+  {
+  $blocks['event_display']=array
+    (
+    'info' => t('Event Details Display'),
+    'weight' => 5,
+    );
+  return($blocks); 
+  } // end function event_display_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function event_display_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "event_display":
+      $block['subject'] = t('Event Details Display');
+      $block['content'] = event_display();
+      break;
+      
+    default:
+      $block['subject'] = t('Event Details Display');
+      $block['content'] = event_display();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function event_display_block_view($delta="")
+  
+/**
+ * function to return event details
+ */
+function event_display()
+  {
+  //if no event id, display error message
+  if(!isset($_GET['event_id'])) $content = "No event to display.";
+  else // there's an event id
+    {
+    // get what event we are displaying
+    $event_id=$_GET['event_id'];
+
+    //check for event information
+    $result=db_query("SELECT * FROM `events` WHERE event_id='$event_id'");
+    //if there's no event data
+    if(count($result)==0) 
+      $content = "No information about this event exists.";
+    else // there's event data
+      {
+      $row=$result->fetchAssoc();
+      extract($row);
+      //get the matching groups for this event
+      $result2=db_query("SELECT group_id FROM event_group WHERE event_id='$event_id'");
+      $groups="";
+      while($row2=$result2->fetchAssoc())
+        {
+        extract($row2);
+        $groupID=explode("|",$group_id);
+        $result3=db_query("SELECT `label` FROM og WHERE gid='".$groupID[0]."' and etid='".$groupID[1]."'");
+        $row3=$result3->fetchAssoc();
+        extract($row3);
+        $groups .= "$label, ";
+        }
+      $groups=substr($groups,0,-2);
+      //build the time and date from the timestamp
+      $eventDate=date("j F Y",$event_timestamp);
+      $eventTime=date("g:ia",$event_timestamp);
+      //build the contemt information
+      $content = "<p>The following are the details for <b>$event_title</b>:</p>";
+      $content .= "<p><b>Date of Event: </b>$eventDate</p>";
+      $content .= "<p><b>Time of Event: </b>$eventTime</p>";
+      $content .= "<p><b>Event Duration: </b>$event_duration</p>";
+      $content .= "<p><b>Type of Event: </b>$event_type</p>";
+      $content .= "<p><b>Location of Event: </b>$event_location</p>";
+      $content .= "<p><b>Point of Contact: </b>$contact_name</p>";
+      $content .= "<p><b>POC Phone: </b>$contact_phone</p>";
+      $content .= "<p><b>POC Email: </b>$contact_email</p>";
+      $content .= "<p><b>Groups Associated to Event: </b>$groups</p>";
+      $content .= "<p><b>Event Details: </b>$event_details</p>";
+      $content .= "<p><b>Webinar Link: </b>$webinar</p>";
+      }// end else there's event data
+    }// end else there's an event id    
+  
+  return($content);
+  }//end function event_display()

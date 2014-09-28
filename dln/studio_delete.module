@@ -1,0 +1,100 @@
+<?php
+
+/**
+ * Implementation of hook_block_info
+ */
+function studio_delete_block_info() 
+  {
+  $blocks['studio_delete']=array
+    (
+    'info' => t('Delete DLN Studio'),
+    'weight' => 1,
+    );
+  return($blocks); 
+  } // end function studio_delete_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function studio_delete_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "studio_delete":
+      $block['subject'] = t('Delete a DLN Studio');
+      $block['content'] = add_studio_delete();
+      break;
+      
+    default:
+      $block['subject'] = t('Delete a DLN Studio');
+      $block['content'] = add_studio_delete();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function studio_delete_block_view($delta="")
+  
+/**
+ * function to return doc_upload form
+ */
+function add_studio_delete() 
+  {
+  $content = drupal_get_form('studio_delete_form');
+  return($content);
+  } // end function add_studio_delete() 
+  
+/**
+ * implementation of hook_form
+ */
+function studio_delete_form($form, &$form_state)
+  {
+  $form['description']=array
+    (
+    '#type' => 'item',
+    '#title' => t('Delete your studio below. &nbsp;Items with an asterisk (*) are mandatory fields.'),
+    );
+  
+  $form['studio_deleteBlock'] = array
+    (
+    '#type' => 'fieldset',
+    '#title' => t('Studio to Delete'),
+    //'#collapsible' => TRUE,
+    //'#collapsed' => FALSE,
+    );
+  
+  $optionsArray = array();
+  $results = db_query("SELECT * FROM dln_studio");
+  while($row = $results -> fetchAssoc())
+    {
+    extract($row);
+    $optionsArray[$studio_id] = $studio_name;
+    }
+  $form['studio_deleteBlock']['studio_id']=array
+    (
+    '#type' => 'select',
+    '#title' => t('Studio to Delete'),
+    '#options' => $optionsArray,
+    '#description' => t('Select the studio to delete.'),
+    );
+
+  $form['submit'] = array
+    (
+    '#type' => 'submit',
+    '#value' => t('DELETE'), 
+    );
+  return($form);
+  }// end function studio_delete_form($form, &$form_state)
+  
+  
+/**
+ * Implementation of hook_form_submit
+ */
+function studio_delete_form_submit($form, &$form_state)
+  {
+  $id = $form['studio_deleteBlock']['studio_id']['#value'];
+  
+  //insert into studio_deletes table
+  $result=db_query("DELETE from dln_studio WHERE studio_id='$id'");
+ 
+  drupal_set_message("Studio is deleted.");
+  }//end function studio_delete_form_submit($form, &$form_state)

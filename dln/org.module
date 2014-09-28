@@ -1,0 +1,124 @@
+<?php
+
+/**
+ * Implementation of hook_block_info
+ */
+function org_block_info() 
+  {
+  $blocks['org']=array
+    (
+    'info' => t('DLN Organization Form'),
+    'weight' => 1,
+    );
+  return($blocks); 
+  } // end function org_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function org_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "org":
+      $block['subject'] = t('Add an Organization');
+      $block['content'] = add_org();
+      break;
+      
+    default:
+      $block['subject'] = t('Add an Organization');
+      $block['content'] = add_org();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function org_block_view($delta="")
+  
+/**
+ * function to return doc_upload form
+ */
+function add_org() 
+  {
+  $content = drupal_get_form('org_form');
+  return($content);
+  } // end function add_org() 
+  
+/**
+ * implementation of hook_form
+ */
+function org_form($form, &$form_state)
+  {
+  $form['description']=array
+    (
+    '#type' => 'item',
+    '#title' => t('Add your organization below. &nbsp;Items with an asterisk (*) are mandatory fields.'),
+    );
+  
+  $form['orgBlock'] = array
+    (
+    '#type' => 'fieldset',
+    '#title' => t('Organization Details'),
+    );
+  
+  $form['orgBlock']['org_name'] = array
+    (
+    '#type' => 'textfield',
+    '#title' => t('Organization Title'),
+    '#required' => TRUE,
+    '#description' => t('Enter the name of the org here'),
+    );
+  
+  $form['orgBlock']['org_desc'] = array
+    (
+    '#type' => 'textarea',
+    '#title' => t('Organization Description'),
+    '#description' => t('Enter the details of this org.'),
+    '#required' => TRUE,
+    );
+  
+  $form['submit'] = array
+    (
+    '#type' => 'submit',
+    '#value' => t('Submit'), 
+    );
+  return($form);
+  }// end function org_form($form, &$form_state)
+  
+/**
+ * implementation of hook_form_validate
+ */
+function org_form_validate($form,&$form_state)
+  {
+  $title= $form['orgBlock']['org_name']['#value'];
+  if(strlen($title)<2)
+    form_set_error('org_title',t('Organization Title is too short.'));
+  
+  $description= $form['orgBlock']['org_desc']['#value'];
+  if(strlen($description)<2)
+    form_set_error('org_desc',t('Organization Description is too short.'));
+  
+  }//end function org_form_validate($form,&$form_state)
+  
+/**
+ * Implementation of hook_form_submit
+ */
+function org_form_submit($form, &$form_state)
+  {
+  //insert into orgs table
+  $result=db_insert('dln_org')
+    ->fields(array(
+      'org_name',
+      'org_desc',
+      ))
+    ->values(array(
+      'org_name'=>$title,
+      'org_details'=>$description,
+      ))
+    ->execute();
+    
+  //get the last inserted id
+  $result=db_query("SELECT org_id FROM dln_org ORDER BY org_id DESC LIMIT 1");
+  $row=$result->fetchAssoc();
+  extract($row);
+ 
+  }//end function org_form_submit($form, &$form_state)

@@ -1,0 +1,88 @@
+<?php
+// $Id: location_display.module Exp $
+
+/**
+ * Implementation of hook_block_info
+ */
+function location_display_block_info() 
+  {
+  $blocks['location_display']=array
+    (
+    'info' => t('Display DLN Locations'),
+    'weight' => 1,
+    );
+  return($blocks); 
+  } // end function location_display_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function location_display_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "location_display":
+      $block['subject'] = t('Display DLN Locations');
+      $block['content'] = location_display();
+      break;
+      
+    default:
+      $block['subject'] = t('Display DLN Locations');
+      $block['content'] = location_display();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function location_display_block_view($delta="")
+  
+/**
+ * function to return event details
+ */
+function location_display()
+  {
+  $content = "";
+
+  $result=db_query("SELECT * FROM `dln_location`");
+  //if there's no event data
+  if(count($result)==0) 
+    $content = "No records available.";
+  else // there's event data
+    {
+    
+    //Create array of results
+    $dataFields=array();
+    while($row = $result -> fetchAssoc())
+      {
+      extract($row);
+      $dataFields[]=array($loc_name,$loc_desc,$loc_id);
+      } 
+
+    //headers for the table
+    $headers = array('Location Name','Location Description','Edit?');
+
+    $content .= "<table border=\"1\">\r\n";
+    //writing the table header
+    $content .= "<tr>";
+    foreach($headers as $header)
+      {
+      $content .= "<th>$header</th>";
+      }
+    $content .= "</tr>\r\n";
+
+    // Now, add data fields
+    foreach($dataFields as $dataField)
+      {
+      $content .= "<tr>";
+      for($i=0;$i<=1;$i++)
+        {
+        $content .= "<td>".$dataField[$i]."</td>";
+        }
+      $content .= "<td><form method=\"post\" action=\"edit-location\"><input type=\"hidden\" name=\"id\" value=\"".$dataField[2]."\" /><input type=\"submit\" value=\"Edit\" /></form></td>";
+      $content .= "</tr>\r\n";
+      }   
+
+    $content .= "</table>\r\n";
+    }// end else there's event data   
+  
+  return($content);
+  }//end function location_display()
