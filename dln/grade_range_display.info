@@ -2,4 +2,4 @@
 name = "Display DLN Course Grade Ranges"
 description = "Display DLN Course Grade Ranges"
 core = "7.x"
-packgrade = "DLN"
+package = "DLN"
