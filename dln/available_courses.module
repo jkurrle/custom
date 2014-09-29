@@ -49,7 +49,12 @@ function available_courses()
                <th>Sign Up!</th>
                </tr>\r\n";
 
-  $result = db_query("SELECT * FROM dln_course");
+  $result = db_query("SELECT * 
+                      FROM dln_course a   
+                      WHERE a.course_id IN
+                         (
+                         SELECT course_id
+                         FROM dln_instr_course)");
   while($row = $result->fetchAssoc())
     {
     extract($row);
