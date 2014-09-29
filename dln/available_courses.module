@@ -40,7 +40,7 @@ function available_courses_block_view($delta="")
 function available_courses() 
   {
   $content = '';
-  $content .= "<p>The following courses are available to register for:</p>";
+  $content .= "<p>The following modules are available to register for:</p>";
   $content .= "<table border='1'>\r\n
                <tr>
                <th>ID Number</th>
@@ -57,7 +57,7 @@ function available_courses()
     $content .= "<td>$course_number</td>";
     $content .= "<td>$course_title</td>";
     if($course_link!="")
-      $content .= "<td>".l('Course Details',$course_link)."</td>";
+      $content .= "<td>".l('Module Details',$course_link)."</td>";
     else
       $content .= "<td>&nbsp;</td>";
     $content .= "<td><form method=\"post\" action=\"/sign-up\"><input type=\"hidden\" name=\"courseID\" value=\"$course_id\" /><input type=\"submit\" value=\"Sign Up\" /></form></td>";

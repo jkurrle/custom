@@ -175,5 +175,5 @@ function course_reg_two_form_submit($form, &$form_state)
       'event_duration'=>$duration,
       ))
     ->execute();
-  drupal_set_message("Your course has been requested and it tentatively blocked on the <a href=\"http://localhost/calendar\">Calendar of Events</a>.  Your request will be reviewed and you will be notified whether it is approved or not.");
+  drupal_set_message("Your course has been requested and it tentatively blocked on the <a href=\"/training-calendar\">Calendar of Events</a>.  Your request will be reviewed and you will be notified whether it is approved or not.");
   }//end function course_reg_two_form_submit($form, &$form_state)
