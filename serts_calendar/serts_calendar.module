@@ -278,16 +278,7 @@ function serts_calendar_display()
 $calendar .= "
           <input id=\"personal\" type=\"radio\" name=\"GlobalLocal\" onclick=\"hideGlobalEvents();\" />Personal&nbsp;&nbsp;\r\n
           <input id=\"global\" type=\"radio\" name=\"GlobalLocal\" checked onclick=\"showGlobalEvents();\" />Global&nbsp;&nbsp;\r\n";
-/*
-$calendar .= "
-          <input type=\"radio\" name=\"GlobalLocal\" onclick=\"changeClassNames('global','hidden');\">Personal</input>&nbsp;&nbsp;\r\n
-          <input type=\"radio\" name=\"GlobalLocal\" checked onclick=\"changeClassNames('hidden','global');\">Global</input>&nbsp;&nbsp;\r\n";
-/* qqq
-$calendar .= "
-          <input type=\"radio\" name=\"GlobalLocal\" onClick=\"document.getElementById('globalEvent').style.display='none';\">Personal</input>&nbsp;&nbsp;\r\n
-          <input type=\"radio\" name=\"GlobalLocal\" checked onClick=\"document.getElementById('globalEvent').style.display='block';\">Global</input>&nbsp;&nbsp;\r\n
-";
-*/
+
         $calendar .= "
         </form>\r\n
         </div><!-- end div class=\"calendarOptions\" -->\r\n
@@ -520,11 +511,8 @@ $displayIt = "global";
 	                                      <b>Event Duration:</b> ".$eventArray['event_duration']."<br />
 	                                      <b>Event Location:</b> ".$eventArray['event_location']."<br />
 	                                      <b>Point of Contact: </b>".$eventArray['contact_name']."<br />
-	                                      <b>POC Phone Number: </b>".$eventArray['contact_phone']."<br />
-	                                      <b>POC Email: </b>".$eventArray['contact_email']."<br />
-	                                      <b>Assigned Groups:</b> $groups<br />
+	                                      <b>Grade Range:</b> $webinar<br />
 	                                      <b>Event Details:</b> ".$eventArray['event_details']."<br />
-	                                      <b>Webinar Link: </b>".$eventArray['webinar']."<br />
 	                                  ]\"
 	                                href=\"event-details?event_id=$event_id\">&nbsp;".$eventArray['event_title']."</a></div>\r\n";
 	    $globalNum++;

@@ -14,3 +14,7 @@ function showGlobalEvents()
     document.getElementById('globalEvent'+i).style.display='block';
     }
   }
+function switchLocation(loc)
+  {
+  
+  }

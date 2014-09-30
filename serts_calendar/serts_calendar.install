@@ -102,9 +102,21 @@ function serts_calendar_schema()
         ),
       'webinar'=>array
         (
-        'description'=>t('Webinar Link'),
+        'description'=>t('Grade Range'),
         'type'=>'varchar',
         'length'=>300,
+        ),
+      'slot'=>array
+        (
+        'description'=>t('Assigned Slot'),
+        'type'=>'int',
+        'default'=>1,
+        ),
+      'approved'=>array
+        (
+        'description'=>t('Approved Course'),
+        'type'=>'varchar',
+        'length'=>1,
         ),
       ),
     'primary key'=>array('event_id'),

@@ -60,7 +60,7 @@ function instructor_display()
       $result3 = db_query("SELECT studio_name from dln_studio WHERE studio_id='$instr_studio'");
       $row3 = $result3 -> fetchAssoc();
       extract($row3);
-      $dataFields[]=array($instr_name,$instr_email,$loc_name,$studio_name,'<form method="post" action="edit-instructor"><input type="hidden" name="id" value="'.$instr_id.'"><input type="submit" value="Edit"></form>','<form method="post" action="assign-courses"><input type="hidden" name="instr_ID" value="'.$instr_id.'"><input type="submit" value="Edit"></form>');
+      $dataFields[]=array($instr_name,$instr_email,$loc_name,$studio_name,'<form method="post" action="edit-instructor"><input type="hidden" name="id" value="'.$instr_id.'"><input type="submit" value="Edit"></form>','<form method="post" action="assign-courses"><input type="hidden" name="instr_ID" value="'.$instr_id.'"><input type="submit" value="Assign"></form>');
       } 
 
     //headers for the table

@@ -49,7 +49,10 @@ function assign_reg_two()
 function course_reg_two_form($form, &$form_state)
   {
 
-//echo "<br /><br /><pre>".print_r($_SESSION['classroom']).print_r($_SESSION['courseID'])."</pre><br /><br />";  
+
+//echo "<br /><br /><pre>".print_r($_SESSION['classroom'])."</pre><br /><br />";  
+//echo "Course ID is ".$_SESSION['courseID'][0]."<br /><br />";
+
 
   $result = db_query("SELECT course_title FROM dln_course WHERE course_id='".$_SESSION['courseID'][0]."'");
   $row = $result -> fetchAssoc();
@@ -146,14 +149,25 @@ function course_reg_two_form_submit($form, &$form_state)
   {
   $duration = $form['duration']['#value']." minutes"; 
   $timestamp = $form['dates_available']['#value'] + $form['start_time']['#value'] * 3600;  
- 
+  $locID = array_pop($_SESSION['classroom']['locations']); 
+
+  $gr = $_SESSION['classroom']['range'];
+
   $result = db_query("SELECT course_title FROM dln_course WHERE course_id='".$_SESSION['courseID'][0]."'");
+  $row = $result -> fetchAssoc();
+  extract($row);
+
+  $result = db_query("SELECT loc_name FROM dln_location WHERE loc_id='$locID'");
+  $row=$result->fetchAssoc();
+  extract($row);
+
+  $result = db_query("SELECT max_grade,min_grade FROM dln_grade_range WHERE grade_range_id='$gr'");
   $row = $result -> fetchAssoc();
   extract($row);
 
   $details = "";
   $details .= "<p>School: ".$_SESSION['classroom']['school']." </p>";
-  $details .= "<p>Teacher: ".$_SESSION['classroom']['teacher']."</p>";
+  $details .= "<p>State: ".$_SESSION['classroom']['state']." </p>";
  
   //insert into events table
   $result=db_insert('events')
@@ -164,15 +178,26 @@ function course_reg_two_form_submit($form, &$form_state)
       'event_timestamp',
       'event_location',
       'contact_name',
-      'event_duration',))
+      'contact_email',
+      'contact_phone',
+      'event_duration',
+      'webinar',
+      'slot',
+      'approved',
+      ))
     ->values(array(
-      'event_title'=>$course_title,
+      'event_title' => $course_title,
       'event_type' => "Internet Class",
       'event_details' => $details,
-      'event_timestamp'=>$timestamp,
-      'event_location'=>"Web Event",
+      'event_timestamp' => $timestamp,
+      'event_location' => $loc_name,
       'contact_name' => $_SESSION['classroom']['teacher'],
-      'event_duration'=>$duration,
+      'contact_email' => $_SESSION['classroom']['email'],
+      'contact_phone' => $_SESSION['classroom']['phone'],
+      'event_duration' => $duration,
+      'webinar' => "From $min_grade to $max_grade",
+      'slot' => 1,
+      'approved' => "N",
       ))
     ->execute();
   drupal_set_message("Your course has been requested and it tentatively blocked on the <a href=\"/training-calendar\">Calendar of Events</a>.  Your request will be reviewed and you will be notified whether it is approved or not.");

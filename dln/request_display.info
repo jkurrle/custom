@@ -1,0 +1,5 @@
+; $Id: request_display.info, v 1.0.0.0 2014/09/04 10:30:00 JKurrle Exp $
+name = "Display Session Requests"
+description = "Display Session Requests"
+core = "7.x"
+package = "DLN"

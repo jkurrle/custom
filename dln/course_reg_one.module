@@ -205,6 +205,15 @@ function course_reg_one_form($form, &$form_state)
     '#default_value' => $_SESSION['classroom']['email'],
     );
 
+  $form['regBlock1']['reg_phone'] = array
+    (
+    '#type' => 'textfield',
+    '#title' => t('Teacher Phone Number'),
+    '#required' => TRUE,
+    '#description' => t('The phone number of the teacher can consist of numbers, spaces, dashes, parentheses, and the lowercase letter x, to denote an extension.'),
+    '#default_value' => $_SESSION['classroom']['phone'],
+    );
+
   if(isset($_POST['instr_ID'])) $_SESSION['instrID'] = array((int)$_POST['instr_ID']);
  
   $ic="";
@@ -298,7 +307,16 @@ function course_reg_one_form_submit($form, &$form_state)
   $email = $form['regBlock1']['reg_email']['#value'];
   $locs=$form['regBlock1']['course_reg_two_name']['#value'];
 
-  $_SESSION['classroom'] = array('state'=>$state,'school'=>$school,'size'=>$classSize,'range'=>$gradeRange,'teacher'=>$teacher,'email'=>$email,'locations'=>$locs);
+  $phone = $form['regBlock1']['reg_phone']['#value'];
+  $digits = str_split($phone);
+  $allowed = array('1','2','3','4','5','6','7','8','9','0','(',')',' ','-','x');
+  $phone2 = ''; 
+  foreach($digits as $digit)
+    {
+    if(in_array($digit,$allowed))$phone2 .= $digit;
+    }
+
+$_SESSION['classroom'] = array('state'=>$state,'school'=>$school,'size'=>$classSize,'range'=>$gradeRange,'teacher'=>$teacher,'email'=>$email,'phone'=>$phone2,'locations'=>$locs);
   drupal_goto("schedule-your-course");
   drupal_set_message("Part One Complete.");
   }//end function course_reg_one_form_submit($form, &$form_state)

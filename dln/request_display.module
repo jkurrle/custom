@@ -1,0 +1,91 @@
+<?php
+// $Id: request_display.module Exp $
+
+/**
+ * Implementation of hook_block_info
+ */
+function request_display_block_info() 
+  {
+  $blocks['request_display']=array
+    (
+    'info' => t('Display Requests'),
+    'weight' => 1,
+    );
+  return($blocks); 
+  } // end function request_display_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function request_display_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "request_display":
+      $block['subject'] = t('Display Requests');
+      $block['content'] = request_display();
+      break;
+      
+    default:
+      $block['subject'] = t('Display Requests');
+      $block['content'] = request_display();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function request_display_block_view($delta="")
+  
+/**
+ * function to return event details
+ */
+function request_display()
+  {
+  $content = "";
+
+  $result=db_query("SELECT * FROM `events` where approved='N'");
+  //if there's no event data
+  if(count($result)==0) 
+    $content = "No records available.";
+  else // there's event data
+    {
+    
+    //Create array of results
+    $dataFields=array();
+    while($row = $result -> fetchAssoc())
+      {
+      extract($row);
+      $event_timestamp=date('M j, Y g:ia',$event_timestamp);
+      $dataFields[]=array($event_id,$event_timestamp,$event_title,$event_location,$event_duration,$webinar,$slot,$event_details,$contact_name,$contact_email,$contact_phone);
+      } 
+
+    //headers for the table
+    $headers = array('Date/Time','Module','Location','Duration','Grade Range','Slot','School','Teacher','Email','Phone','Approve','Deny');
+
+    $content .= "<table border=\"1\">\r\n";
+    //writing the table header
+    $content .= "<tr>";
+    foreach($headers as $header)
+      {
+      $content .= "<th>$header</th>";
+      }
+    $content .= "</tr>\r\n";
+
+    // Now, add data fields
+    foreach($dataFields as $dataField)
+      {
+      $id=array_shift($dataField);
+      $content .= "<tr>";
+      foreach($dataField as $dataItem)
+        {
+        $content .= "<td>$dataItem</td>";
+        }
+      $content .= "<td><form method=\"post\" action=\"request-approve\"><input type=\"hidden\" name=\"id\" value=\"$id\" /><input type=\"submit\" value=\"Approve\" /></form></td>";
+      $content .= "<td><form method=\"post\" action=\"request-deny\"><input type=\"hidden\" name=\"id\" value=\"$id\" /><input type=\"submit\" value=\"Deny\" /></form></td>";
+      $content .= "</tr>\r\n";
+      }   
+
+    $content .= "</table>\r\n";
+    }// end else there's event data   
+  
+  return($content);
+  }//end function request_display()
