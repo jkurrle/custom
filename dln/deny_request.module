@@ -86,9 +86,16 @@ function deny_request_form($form, &$form_state)
   {
   if(isset($_POST['id'])) $_SESSION['reqID']=array($_POST['id']);
 
-  $result=db_query("SELECT * FROM events WHERE event_id='".$_SESSION['reqID'][0]."'");
-  if($row = $result->fetchAssoc()) extract($row);
+  $flag="N";
 
+  $result=db_query("SELECT * FROM events WHERE event_id='".$_SESSION['reqID'][0]."'");
+  if($row = $result->fetchAssoc()) 
+    {
+    extract($row);
+    $flag = "Y";
+    }
+
+  if($flag=="Y") {
   $result=db_query("SELECT boiler_acc FROM dln_location WHERE loc_name='$event_location'");
   $row = $result->fetchAssoc();
   extract($row);
@@ -140,6 +147,7 @@ function deny_request_form($form, &$form_state)
     '#type' => 'submit',
     '#value' => t('Submit'), 
     );
+  }
   return($form);
   }// end function deny_request_form($form, &$form_state)
   
