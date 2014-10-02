@@ -43,8 +43,8 @@ function available_courses()
   $content .= "<p>The following modules are available to register for:</p>";
   $content .= "<table border='1'>\r\n
                <tr>
-               <th>ID Number</th>
                <th>Title</th>
+               <th>ID Number</th>
                <th>More Information</th>
                <th>Sign Up!</th>
                </tr>\r\n";
@@ -59,8 +59,8 @@ function available_courses()
     {
     extract($row);
     $content .= "<tr>";
-    $content .= "<td>$course_number</td>";
     $content .= "<td>$course_title</td>";
+    $content .= "<td>$course_number</td>";
     if($course_link!="")
       $content .= "<td>".l('Module Details',$course_link)."</td>";
     else
