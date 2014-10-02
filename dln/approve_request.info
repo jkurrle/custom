@@ -1,0 +1,5 @@
+; $Id: approve_request.info, v 1.0.0.0 2014/09/04 10:30:00 JKurrle Exp $
+name = "Approve Request (DLN)"
+description = "DLN Approve Request"
+core = "7.x"
+package = "DLN"

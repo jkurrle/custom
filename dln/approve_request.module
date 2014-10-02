@@ -1,0 +1,170 @@
+<?php
+// $Id: approve_request.module Exp $
+
+/**
+ * Implementation of hook_block_info
+ */
+function approve_request_block_info() 
+  {
+  $blocks['approve_request']=array
+    (
+    'info' => t('Approve a Request '),
+    'weight' => 1,
+    );
+  return($blocks); 
+  } // end function approve_request_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function approve_request_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "approve_request":
+      $block['subject'] = t('Approve a Request');
+      $block['content'] = add_approve_request();
+      break;
+      
+    default:
+      $block['subject'] = t('Approve a Request');
+      $block['content'] = add_approve_request();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function approve_request_block_view($delta="")
+  
+function approve_request_mail($from = 'default_from', $to, $subject, $message) 
+  {
+  $my_module = 'approve_request';
+  $my_mail_token = microtime();
+  if ($from == 'default_from') 
+    {
+    // Change this to your own default 'from' email address.
+    $from = variable_get('system_mail', 'do-not-reply@nasa.gov');
+    }
+  $message = array
+    (
+    'id' => $my_module . '_' . $my_mail_token,
+    'to' => $to,
+    'subject' => $subject,
+    'body' => array($message),
+    'headers' => array
+      (
+      'From' => $from,
+      'Sender' => $from,
+      'Return-Path' => $from,
+      ),
+    );
+  $system = drupal_mail_system($my_module, $my_mail_token);
+  $message = $system->format($message);
+  if ($system->mail($message)) 
+    {
+    return TRUE;
+    } 
+  else 
+    {
+    return FALSE;
+    }
+  }
+//approve_request_mail('default_from', $usermail, $subject, $message );
+
+/**
+ * function to return approval form
+ */
+function add_approve_request() 
+  {
+  $content = drupal_get_form('approve_request_form');
+  return($content);
+  } // end function add_grade range() 
+  
+/**
+ * implementation of hook_form
+ */
+function approve_request_form($form, &$form_state)
+  {
+  if(isset($_POST['id'])) $_SESSION['reqID']=array($_POST['id']);
+
+  $result=db_query("SELECT * FROM events WHERE event_id='".$_SESSION['reqID'][0]."'");
+  $row = $result->fetchAssoc();
+  extract($row);
+
+  $result=db_query("SELECT boiler_acc FROM dln_location WHERE loc_name='$event_location'");
+  $row = $result->fetchAssoc();
+  extract($row);
+
+  $form['description']=array
+    (
+    '#type' => 'item',
+    '#title' => t('Approve the request below.'),
+    );
+
+  $appr_text = "<p>This approval is for the course \"$event_title\".  It will be held on ".date('M j, Y',$event_timestamp)." at ".date('g:ia',$event_timestamp).".  It will be hosted from $event_location.  The school details are below:</p>".$event_details."<p>Grade Range: $webinar</p><p>The teacher is $contact_name, whose email is $contact_email and whose phone number is $contact_phone.</p><p>Please update your acceptance letter before releasing it to mail.</p>";
+  
+  $form['approve_requestBlock'] = array
+    (
+    '#type' => 'fieldset',
+    '#title' => t('Request Details'),
+    //'#collapsible' => TRUE,
+    //'#collapsed' => FALSE,
+    );
+  
+  $form['approve_requestBlock']['acc_req_intor'] = array
+    (
+    '#markup' => t($appr_text),
+    );
+  
+  $form['approve_requestBlock']['boiler_acc'] = array
+    (
+    '#type' => 'textarea',
+    '#title' => t('Acceptance Letter'),
+    '#required' => TRUE,
+    '#description' => t('Enter your acceptance letter below'),
+    '#default_value' => t($boiler_acc),
+    );
+  
+  $form['approve_requestBlock']['email'] = array
+    (
+    '#value' => $contact_email,
+    '#type' => 'hidden',
+    );
+
+  $form['approve_requestBlock']['event_id'] = array
+    (
+    '#value' => $event_id,
+    '#type' => 'hidden',
+    );
+
+  $form['submit'] = array
+    (
+    '#type' => 'submit',
+    '#value' => t('Submit'), 
+    );
+  return($form);
+  }// end function approve_request_form($form, &$form_state)
+  
+/**
+ * implementation of hook_form_validate
+ */
+function approve_request_form_validate($form,&$form_state)
+  {
+  // nothing to do 
+  }//end function approve_request_form_validate($form,&$form_state)
+  
+/**
+ * Implementation of hook_form_submit
+ */
+function approve_request_form_submit($form, &$form_state)
+  {
+  //getting the rest of the variables
+  $approval = $form['approve_requestBlock']['boiler_acc']['#value'];
+  $email = $form['approve_requestBlock']['email']['#value'];
+  $event_id = (int)$form['approve_requestBlock']['event_id']['#value'];
+  
+  $result = db_query("update events SET approved='Y' WHERE event_id='$event_id'");  
+
+  approve_request_mail('default_from', $email, 'Your Requested NASA Course is Approved', $approval );
+ 
+  drupal_set_message("Approval email sent and session is formalized");
+  }//end function approve_request_form_submit($form, &$form_state)
