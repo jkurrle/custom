@@ -202,7 +202,7 @@ function instructor_form_validate($form,&$form_state)
     else
       {
       $test2=explode(".",$test1[1]);
-      if(count($test2) != 2) form_set_error('instr_email',t('Incorrect email format.'));
+      if(count($test2) < 2) form_set_error('instr_email',t('Incorrect email format.'));
       }
     }
   else
