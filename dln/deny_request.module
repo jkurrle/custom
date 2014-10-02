@@ -96,7 +96,7 @@ function deny_request_form($form, &$form_state)
     }
 
   if($flag=="Y") {
-  $result=db_query("SELECT boiler_acc FROM dln_location WHERE loc_name='$event_location'");
+  $result=db_query("SELECT boiler_rej FROM dln_location WHERE loc_name='$event_location'");
   $row = $result->fetchAssoc();
   extract($row);
 
@@ -124,7 +124,7 @@ function deny_request_form($form, &$form_state)
   $form['deny_requestBlock']['boiler_acc'] = array
     (
     '#type' => 'textarea',
-    '#title' => t('Acceptance Letter'),
+    '#title' => t('Denial Letter'),
     '#required' => TRUE,
     '#description' => t('Enter your acceptance letter below'),
     '#default_value' => t($boiler_acc),
