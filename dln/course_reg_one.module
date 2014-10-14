@@ -59,7 +59,7 @@ function course_reg_one_form($form, &$form_state)
 
   if(!isset($_SESSION['classroom']))
     {
-    $_SESSION['classroom']=array('state'=>'','school'=>'','size'=>'','range'=>'','teacher'=>'','email'=>'');
+    $_SESSION['classroom']=array('state'=>'','school'=>'','size'=>'','range'=>'','teacher'=>'','email'=>'','phone'=>'');
     }
   $form['description']=array
     (
