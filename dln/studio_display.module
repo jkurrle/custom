@@ -81,8 +81,8 @@ function studio_display()
         }
 //echo "<br /><br />Location ID is $loc_id <br /><br />";
       $result2 = db_query("SELECT loc_name FROM dln_location WHERE loc_id='$loc_id'");
-      $row2 = $result2 -> fetchAssoc();
-      extract($row2);
+      if($row2 = $result2 -> fetchAssoc()) extract($row2);
+      else $loc_name="";
       $content .= "<td>$loc_name</td>";
       $content .= "<td><form method=\"post\" action=\"edit-studio\"><input type=\"hidden\" name=\"id\" value=\"$id\" /><input type=\"submit\" value=\"Edit\" /></form></td>";
       $content .= "</tr>\r\n";
