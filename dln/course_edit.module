@@ -22,12 +22,12 @@ function course_edit_block_view($delta="")
   switch ($delta)
     {
     case "course":
-      $block['subject'] = t('Update a DLN Course');
+      $block['subject'] = t('Update a DLN Module');
       $block['content'] = edit_course();
       break;
       
     default:
-      $block['subject'] = t('Update a DLN Course');
+      $block['subject'] = t('Update a DLN Module');
       $block['content'] = edit_course();
       break;
     }// end switch ($delta)
@@ -56,13 +56,13 @@ function course_edit_form($form, &$form_state)
   $form['description']=array
     (
     '#type' => 'item',
-    '#title' => t('Update your course below. &nbsp;Items with an asterisk (*) are mandatory fields.'),
+    '#title' => t('Update your module below. &nbsp;Items with an asterisk (*) are mandatory fields.'),
     );
   
   $form['courseBlock'] = array
     (
     '#type' => 'fieldset',
-    '#title' => t('Course Details'),
+    '#title' => t('Module Details'),
     //'#collapsible' => TRUE,
     //'#collapsed' => FALSE,
     );
@@ -70,37 +70,37 @@ function course_edit_form($form, &$form_state)
   $form['courseBlock']['course_edit_title'] = array
     (
     '#type' => 'textfield',
-    '#title' => t('Course Title'),
+    '#title' => t('Module Title'),
     '#default_value' => $course_title,
     '#required' => TRUE,
-    '#description' => t('Enter the title of the course here'),
+    '#description' => t('Enter the title of the module here'),
     );
   
   $form['courseBlock']['course_edit_number'] = array
     (
     '#type' => 'textfield',
-    '#title' => t('Course Number'),
+    '#title' => t('Module Number'),
     '#default_value' => $course_number,
     '#required' => FALSE,
-    '#description' => t('Enter the assigned number of the course here'),
+    '#description' => t('Enter the assigned number of the module here'),
     );
   
   $form['courseBlock']['course_edit_desc'] = array
     (
     '#type' => 'textarea',
-    '#title' => t('Course Description'),
+    '#title' => t('Module Description'),
     '#default_value' => $course_description,
-    '#description' => t('Enter the details of this course.'),
+    '#description' => t('Enter the details of this module.'),
     '#required' => TRUE,
     );
   
   $form['courseBlock']['course_edit_link'] = array
     (
     '#type' => 'textfield',
-    '#title' => t('Course Page Link'),
+    '#title' => t('Module Page Link'),
     '#default_value' => $course_link,
     '#required' => FALSE,
-    '#description' => t('Enter the page link of the course here'),
+    '#description' => t('Enter the page link of the module here'),
     );
   
   $form['submit'] = array

@@ -22,12 +22,12 @@ function course_delete_block_view($delta="")
   switch ($delta)
     {
     case "course_delete":
-      $block['subject'] = t('Delete a DLN Course');
+      $block['subject'] = t('Delete a DLN Module');
       $block['content'] = add_course_delete();
       break;
       
     default:
-      $block['subject'] = t('Delete a DLN Course');
+      $block['subject'] = t('Delete a DLN Module');
       $block['content'] = add_course_delete();
       break;
     }// end switch ($delta)
@@ -51,13 +51,13 @@ function course_delete_form($form, &$form_state)
   $form['description']=array
     (
     '#type' => 'item',
-    '#title' => t('Delete your course below. &nbsp;Items with an asterisk (*) are mandatory fields.'),
+    '#title' => t('Delete your module below. &nbsp;Items with an asterisk (*) are mandatory fields.'),
     );
   
   $form['course_deleteBlock'] = array
     (
     '#type' => 'fieldset',
-    '#title' => t('Course to Delete'),
+    '#title' => t('Module to Delete'),
     //'#collapsible' => TRUE,
     //'#collapsed' => FALSE,
     );
@@ -74,7 +74,7 @@ function course_delete_form($form, &$form_state)
     '#type' => 'select',
     '#title' => t('Course to Delete'),
     '#options' => $optionsArray,
-    '#description' => t('Select the course to delete.'),
+    '#description' => t('Select the module to delete.'),
     );
 
   $form['submit'] = array

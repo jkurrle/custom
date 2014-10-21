@@ -23,12 +23,12 @@ function course_display_block_view($delta="")
   switch ($delta)
     {
     case "course_display":
-      $block['subject'] = t('Display DLN Courses');
+      $block['subject'] = t('Display DLN Modules');
       $block['content'] = course_display();
       break;
       
     default:
-      $block['subject'] = t('Display DLN Courses');
+      $block['subject'] = t('Display DLN Modules');
       $block['content'] = course_display();
       break;
     }// end switch ($delta)
@@ -58,7 +58,7 @@ function course_display()
       } 
 
     //headers for the table
-    $headers = array('Course Number','Course Title','Edit?');
+    $headers = array('Module Number','Module Title','Edit?');
 
     $content .= "<table border=\"1\">\r\n";
     //writing the table header
