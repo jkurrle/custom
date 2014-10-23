@@ -517,6 +517,6 @@ $displayIt = "global";
   $calendar .= "</table></div><!-- end div class=\"calendarContainer\" -->\r\n
     <!-- /form --><!-- suppress weekend form close -->\r\n
     </div><!-- end div class=\"calendarTotalContainer\" -->\r\n"; 
-  
+  $calendar .= "<script type=\"text/javascript\" src=\"/sites/all/modules/custom/serts_calendar/javascript/globalEvent.js\"></script>";
   return $calendar;
   }// end function serts_calendar_display()
