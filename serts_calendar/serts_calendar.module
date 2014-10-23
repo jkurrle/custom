@@ -278,11 +278,14 @@ function serts_calendar_display()
 $result = db_query("SELECT DISTINCT a.loc_name, a.loc_id 
                     FROM dln_location a, dln_instructor b
                     WHERE a.loc_id = b.instr_loc");
+$calendar .= "<select name=\"Location\" onChange=\"switchLocation(this.value);\">";
+$calendar .= "<option value=\"0\">Show All</option>";
 while($row = $result->fetchAssoc())
   {
   extract($row);
-  $calendar .= "<input id=\"Loc_".$loc_id."\" type=\"radio\" name=\"Location\" onclick=\"switchLocation($loc_id);\" />$loc_name&nbsp;&nbsp;\r\n";
+  $calendar .= "<option value=\"$loc_id\">$loc_name</option>\r\n";
   }
+$calendar .= "</select>";
 /*
 $calendar .= "
           <input id=\"personal\" type=\"radio\" name=\"GlobalLocal\" onclick=\"hideGlobalEvents();\" />Personal&nbsp;&nbsp;\r\n

@@ -16,17 +16,29 @@ function showGlobalEvents()
   }
 function switchLocation(loc)
   {
-  var wiped = document.getElementsByClassName('global');
-  var q = wiped.length;
-  while(q--)
+  //alert(loc + ' is passed');
+  if(loc!=0)
     {
-    wiped[q].style.display = 'none';
+    var wiped = document.getElementsByClassName('global');
+    var q = wiped.length;
+    while(q--)
+      {
+      wiped[q].style.display = 'none';
+      }
+    var show=document.getElementsByClassName('loc_'+loc);
+    var i=show.length;
+    while(i--)
+      {
+      show[i].style.display = 'block';
+      }  
     }
-  
-  var show=document.getElementsByClassName('loc_'+loc);
-  var i=show.length;
-  while(i--)
+  else
     {
-    show[i].style.display = 'block';
-    }  
+    var show = document.getElementsByClassName('global');
+    var i = show.length;
+    while(i--)
+      {
+      show[i].style.display = 'block';
+      }
+    }
   }
