@@ -428,6 +428,7 @@ $calendar .= "
         { 
         $calendar_day=$calendar_day+1;
         $calendar .= "<div>$calendar_day</div>\r\n";
+        $calendar .= "<ul>\r\n";
         //here, we retrieve events that match the corresponding day
         foreach($eventsArray as $eventArray)
           {
@@ -461,7 +462,7 @@ $displayIt = "global";
               {
               if(!isset($globalNum)) $globalNum=1;
               //display the link with extended title attributes
-	                  $calendar .= "<div id=\"globalEvent".$globalNum."\" class=\"global loc_".$loc_id."\"><a class=\"eventLink\" 
+	                  $calendar .= "<li id=\"globalEvent".$globalNum."\" class=\"global loc_".$loc_id."\"><a class=\"eventLink\" 
 	                                title=\"header=[Event Information] cssbody=[dvbdy1] cssheader=[dvhdr1] 
 	                                body=[<b>Event Title:</b> ".$eventArray['event_title']." (global)<br />
 	                                      <b>Event Type:</b> ".$eventArray['event_type']."<br>
@@ -473,7 +474,7 @@ $displayIt = "global";
 	                                      <b>Grade Range:</b> $webinar<br />
 	                                      <b>Event Details:</b> ".$eventArray['event_details']."<br />
 	                                  ]\"
-	                                href=\"event-details?event_id=$event_id\">&nbsp;".$eventArray['event_title']."</a></div>\r\n";
+	                                href=\"event-details?event_id=$event_id\">&nbsp;".$eventArray['event_title']."</a></li>\r\n";
 	    $globalNum++;
             }
             
@@ -497,6 +498,7 @@ $displayIt = "global";
 	                                  ]\"
 	                                href=\"event-details?event_id=$event_id\">&nbsp;".$eventArray['event_title']."</a></div>\r\n";
               }
+            $calendar .= "</ul>";
             }// end if(date("j",$eventArray['event_timestamp'])==$calendar_day)
           }// end foreach($eventsArray as $eventArray)
         // if this is a holiday, display the holiday info
