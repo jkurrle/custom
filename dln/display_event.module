@@ -1,0 +1,63 @@
+<?php
+// $Id: display_event.module Exp $
+
+/**
+ * Implementation of hook_block_info
+ */
+function display_event_block_info() 
+  {
+  $blocks['display_event']=array
+    (
+    'info' => t('Display Events'),
+    'weight' => 1,
+    );
+  return($blocks); 
+  } // end function display_event_block_info() 
+
+/**
+ * Implementation of hook_block_view
+ */
+function display_event_block_view($delta="")
+  {
+  $block = array();
+  switch ($delta)
+    {
+    case "display_event":
+      $block['subject'] = t('Display Events');
+      $block['content'] = display_event();
+      break;
+      
+    default:
+      $block['subject'] = t('Display Events');
+      $block['content'] = display_event();
+      break;
+    }// end switch ($delta)
+  return($block);
+  }// end function display_event_block_view($delta="")
+  
+/**
+ * function to return event details
+ */
+function display_event()
+  {
+  $content = "";
+  $id=(int)$_GET['event_id'];
+
+  $result=db_query("SELECT * FROM `events` WHERE event_id='$id'");
+  //if there's no event data
+  if(count($result)==0) 
+    $content = "No information available.";
+  else // there's event data
+    {
+    $row = $result -> fetchAssoc();
+    extract($row);
+
+    $content .= "<p><b>Event Title</b>: $event_title</p>";
+    $content .= "<p><b>Event Date</b>: ".date("l, F jS, Y",$event_timestamp)."</p>";
+    $content .= "<p><b>Event Time</b>: ".date("g:i A",$event_timestamp)."</p>";
+    $content .= "<p><b>Event Duration</b>: $event_duration</p>";
+    $content .= "<p><b>Event Hosted From</b>: $event_location</p>";
+    }// end else there's event data   
+  
+  return($content);
+  }//end function display_event()
