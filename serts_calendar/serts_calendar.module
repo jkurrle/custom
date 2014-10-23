@@ -275,10 +275,19 @@ function serts_calendar_display()
       <div class=\"calendarGlobalLocal\">\r\n
         <div class=\"calendarOptions\">\r\n
         <form>\r\n";
+$result = db_query("SELECT DISTINCT a.loc_name, a.loc_id 
+                    FROM dln_location a, dln_instructor b
+                    WHERE a.loc_id = b.instr_loc");
+while($row = $result->fetchAssoc())
+  {
+  extract($row);
+  $calendar .= "<input id=\"Loc_".$loc_id."\" type=\"radio\" name=\"Location\" onclick=\"switchLocation($loc_id);\" />$loc_name&nbsp;&nbsp;\r\n";
+  }
+/*
 $calendar .= "
           <input id=\"personal\" type=\"radio\" name=\"GlobalLocal\" onclick=\"hideGlobalEvents();\" />Personal&nbsp;&nbsp;\r\n
           <input id=\"global\" type=\"radio\" name=\"GlobalLocal\" checked onclick=\"showGlobalEvents();\" />Global&nbsp;&nbsp;\r\n";
-
+*/
         $calendar .= "
         </form>\r\n
         </div><!-- end div class=\"calendarOptions\" -->\r\n
@@ -423,6 +432,11 @@ $calendar .= "
           if(date("j",$eventArray['event_timestamp'])==$calendar_day)
             {
             if($eventArray['event_location']=='')$eventArray['event_location']=t('Not Applicable');
+            $res1 = db_query("SELECT loc_id 
+                              FROM dln_location 
+                              WHERE loc_name=:locID",array(":locID" => $eventArray['event_location']));
+            $rw = $res1->fetchAssoc();
+            extract($rw);
             $eventDate=date("j F Y",$eventArray['event_timestamp']);
             $eventTime=date("g:ia",$eventArray['event_timestamp']);
             $groups='';
@@ -437,72 +451,14 @@ $calendar .= "
               $groups .= "$label, ";
               }// end foreach($eventArray['event_groups'] as $groupItem)
             $groups=substr($groups,0,-2);
-           /* 
-            //get my groups...
-            global $user;
-            $uid=$user->uid;
-            $userGroupResults=db_query("SELECT gid FROM og_membership WHERE etid=:user",array(':user'=>$uid));
-            $userGroups=array();
-            while($userGroupRow=$userGroupResults->fetchAssoc())
-              {
-              extract($userGroupRow);
-              $userGroups[]=$gid;
-              }
-            
-            //get all functional group etids (which are the matching node ids)
-            $functionalGroups = array();
-            $functionalGroupResults=db_query("SELECT `nid` FROM node WHERE type=:functional",array(':functional'=>'functional_groups'));
-            while($functionalGroupRow=$functionalGroupResults->fetchAssoc())
-              {
-              extract($functionalGroupRow);
-              //get the matching Group ID
-              $groupIdResult=db_query("SELECT gid FROM og WHERE etid=:etid",array(':etid'=>$nid));
-              $groupIdRow=$groupIdResult->fetchAssoc();
-              extract($groupIdRow);
-              //assign the gid to the list
-              $functionalGroups[]=$gid;
-              }
-            
-	    //get the event group ids
-	    $eventGroups=array();
-	    foreach($eventArray['event_groups'] as $groupItem)
-	      {
-	      $groupSplit=explode("|",$groupItem);
-	      $eventGroups[]=$groupSplit[0];
-	      }
-	    
-	    // is it local, global or not displayed? 
-	    //assume it isn't displayed
-	    $displayIt="none";
-	    
-	    //if it matches any of my groups, set it to local
-	    foreach($eventGroups as $eventGroup)
-	      {
-	      foreach($userGroups as $userGroup)
-	        {
-	        if($userGroup==$eventGroup) $displayIt="local";
-	        }
-	      }
-            
-            //if if isn't a local group, test to see if it is a global group
-            if($displayIt!="local")
-              {
-              foreach($eventGroups as $eventGroup)
-                {
-                foreach($functionalGroups as $functionalGroup)
-                  {
-                  if($functionalGroup==$eventGroup) $displayIt="global";
-                  }
-                }
-              }
-            */
+
 $displayIt = "global";
             //if it's a global event, display it with a globalEvent div wrapper
             if($displayIt=="global")
               {
               if(!isset($globalNum)) $globalNum=1;
               //display the link with extended title attributes
-	                  $calendar .= "<div id=\"globalEvent".$globalNum."\" class=\"global\"><a class=\"eventLink\" 
+	                  $calendar .= "<div id=\"globalEvent".$globalNum."\" class=\"global loc_".$loc_id."\"><a class=\"eventLink\" 
 	                                title=\"header=[Event Information] cssbody=[dvbdy1] cssheader=[dvhdr1] 
 	                                body=[<b>Event Title:</b> ".$eventArray['event_title']." (global)<br />
 	                                      <b>Event Type:</b> ".$eventArray['event_type']."<br>
