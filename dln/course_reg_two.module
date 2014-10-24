@@ -147,8 +147,9 @@ function course_reg_two_form_validate($form,&$form_state)
  */
 function course_reg_two_form_submit($form, &$form_state)
   {
-  $duration = $form['duration']['#value']." minutes"; 
-  $timestamp = $form['dates_available']['#value'] + $form['start_time']['#value'] * 3600;  
+  $duration = $form['duration']['#value']." minutes";
+  // Not sure why, but date is being stored one day later and one hour earlier.  So we subtract 23 hours... 
+  $timestamp = $form['dates_available']['#value'] - 82800 + $form['start_time']['#value'] * 3600;  
   $locID = array_pop($_SESSION['classroom']['locations']); 
 
   $gr = $_SESSION['classroom']['range'];
