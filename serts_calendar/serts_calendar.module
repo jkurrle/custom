@@ -55,6 +55,54 @@ function serts_calendar()
   }
 
 /**
+ * Function to test if a Federal Holiday
+ */
+function is_holiday($timestamp)
+  {
+  // Holiday is initially set to False
+  $holiday=FALSE;
+
+  //New Year's Day - observed January 2nd, if 1st is Sunday
+  if(date("M j",$timestamp) == "Jan 1") $holiday = TRUE;
+  if(date("D M j",$timestamp) == "Sun Jan 2") $holiday = TRUE;  
+
+  //MLK Day - 3rd Monday in January (the 15th to the 21st)
+  if(date("D M",$timestamp) == "Mon Jan" && date("j",$timestamp) > 14 && date("j",$timestamp) < 22) $holiday = TRUE;
+
+  //Washington's Birthday - observed 3rd Monday in February (the 15th to the 21st)
+  if(date("D M",$timestamp) == "Mon Feb" && date("j",$timestamp) > 14 && date("j",$timestamp) < 22) $holiday = TRUE;
+
+  //Memorial Day - Last Monday in May (the 25th to the 31st)
+  if(date("D M",$timestamp) == "Mon May" && date("j",$timestamp) > 24 && date("j",$timestamp) <= 31) $holiday = TRUE;
+
+  //Independence Day - if on Sat, observed on 3rd.  If on Sun, observed on 5th
+  if(date("M j",$timestamp) == "Jul 4") $holiday = TRUE;
+  if(date("D M j",$timestamp) == "Fri Jul 3") $holiday = TRUE;  
+  if(date("D M j",$timestamp) == "Mon Jul 5") $holiday = TRUE;  
+  
+  //Labor Day - First Monday of September (the 1st to the 7th)
+  if(date("D M",$timestamp) == "Mon Sep" && date("j",$timestamp) >= 1 && date("j",$timestamp) < 8) $holiday = TRUE;
+
+  //Columbus Day - 2nd Monday of October (the 8th to the 14th)
+  if(date("D M",$timestamp) == "Mon Oct" && date("j",$timestamp) > 7 && date("j",$timestamp) < 15) $holiday = TRUE;
+  
+  //Veterans Day - if the 11th of November is on Saturday, observed on 10th. If on Sunday, observed on 12th
+  if(date("M j",$timestamp) == "Nov 11") $holiday = TRUE;
+  if(date("D M j",$timestamp) == "Fri Nov 10") $holiday = TRUE;  
+  if(date("D M j",$timestamp) == "Mon Nov 12") $holiday = TRUE;  
+ 
+  //Thanksgiving - 4th Thursday in November (the 22nd to the 28th)
+  if(date("D M",$timestamp) == "Thu Nov" && date("j",$timestamp) > 21 && date("j",$timestamp) < 29) $holiday = TRUE;
+  
+  //Christmas - if on Saturday, observed the 24th. If on Sunday, observed the 26th.
+  if(date("M j",$timestamp) == "Dec 25") $holiday = TRUE;
+  if(date("D M j",$timestamp) == "Fri Dec 24") $holiday = TRUE;  
+  if(date("D M j",$timestamp) == "Mon Dec 26") $holiday = TRUE;  
+
+  return($holiday);
+  }
+
+/**
  * Function to return calendar display for a block
  */
 function serts_calendar_display()

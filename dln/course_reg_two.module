@@ -70,10 +70,10 @@ function course_reg_two_form($form, &$form_state)
   $endDate = strtotime(date("F j, Y"))+6480000;
   // create an array to hold days
   $daysArray = array();
-  //Now, fill it with weekdays (not Saturdays nor Sundays);
+  //Now, fill it with workdays (not Saturdays, nor Sundays, nor holidays);
   for($i=$startDate;$i<=$endDate;$i=$i+86400)
     {
-    if(date("D",$i)!="Sat" && date("D",$i)!="Sun") $daysArray[$i] = date("l, M jS, Y",$i);
+    if(date("D",$i)!="Sat" && date("D",$i)!="Sun" && !is_holiday($i)) $daysArray[$i] = date("l, M jS, Y",$i);
     } 
 
   $form['dates_available'] = array
