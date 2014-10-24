@@ -185,6 +185,7 @@ function course_reg_two_form_submit($form, &$form_state)
       'webinar',
       'slot',
       'approved',
+      'timezone',
       ))
     ->values(array(
       'event_title' => $course_title,
@@ -199,6 +200,7 @@ function course_reg_two_form_submit($form, &$form_state)
       'webinar' => "From $min_grade to $max_grade",
       'slot' => 1,
       'approved' => "N",
+      'timezone' => $_SESSION['classroom']['timezone'],
       ))
     ->execute();
   drupal_set_message("Your course has been requested and it tentatively blocked on the <a href=\"/training-calendar\">Calendar of Events</a>.  Your request will be reviewed and you will be notified whether it is approved or not.");

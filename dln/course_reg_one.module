@@ -59,7 +59,7 @@ function course_reg_one_form($form, &$form_state)
 
   if(!isset($_SESSION['classroom']))
     {
-    $_SESSION['classroom']=array('state'=>'','school'=>'','size'=>'','range'=>'','teacher'=>'','email'=>'','phone'=>'');
+    $_SESSION['classroom']=array('state'=>'','school'=>'','size'=>'','range'=>'','teacher'=>'','email'=>'','phone'=>'','timezone'=>'');
     }
   $form['description']=array
     (
@@ -144,6 +144,24 @@ function course_reg_one_form($form, &$form_state)
     '#options' => $optionsArray,
     '#description' => t('Select which state (or territory) your classroom is in.'),
     '#default_value' => $_SESSION['classroom']['state'],
+    );
+
+  $optionsArray = array
+    (
+    "0" => "EST",
+    "1" => "CST",
+    "2" => "MST",
+    "3" => "PST",
+    "4" => "AKST",
+    "6" => "HST",
+    );
+  $form['regBlock1']['timezone'] = array
+    (
+    "#type" => "select",
+    "#title" => t('Classroom Time Zone'),
+    "#options" => $optionsArray,
+    "#description" => t('Select the time zone your classroom is in.'),
+    "#default_value" => $_SESSION['classroom']['timezone'],
     );
 
   $form['regBlock1']['reg_school'] = array
@@ -306,6 +324,7 @@ function course_reg_one_form_submit($form, &$form_state)
   $teacher = check_plain($form['regBlock1']['reg_teacher']['#value']);
   $email = $form['regBlock1']['reg_email']['#value'];
   $locs=$form['regBlock1']['course_reg_two_name']['#value'];
+  $tz = $form['regBlock1']['timezone']['#value'];
 
   $phone = $form['regBlock1']['reg_phone']['#value'];
   $digits = str_split($phone);
@@ -316,7 +335,7 @@ function course_reg_one_form_submit($form, &$form_state)
     if(in_array($digit,$allowed))$phone2 .= $digit;
     }
 
-$_SESSION['classroom'] = array('state'=>$state,'school'=>$school,'size'=>$classSize,'range'=>$gradeRange,'teacher'=>$teacher,'email'=>$email,'phone'=>$phone2,'locations'=>$locs);
+$_SESSION['classroom'] = array('state'=>$state,'school'=>$school,'size'=>$classSize,'range'=>$gradeRange,'teacher'=>$teacher,'email'=>$email,'phone'=>$phone2,'locations'=>$locs,'timezone' => $tz);
   drupal_goto("schedule-your-course");
   drupal_set_message("Part One Complete.");
   }//end function course_reg_one_form_submit($form, &$form_state)

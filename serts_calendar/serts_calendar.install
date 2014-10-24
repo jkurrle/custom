@@ -118,6 +118,12 @@ function serts_calendar_schema()
         'type'=>'varchar',
         'length'=>1,
         ),
+      'timezone' => array
+        (
+        'description' => t('Classroom Time Zone'),
+        'type' => 'int',
+        'default' => 0,
+        ),
       ),
     'primary key'=>array('event_id'),
     'indexes'=>array('event_timestamp'=>array('event_timestamp'),'event_type'=>array('event_type')),
