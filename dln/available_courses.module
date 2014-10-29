@@ -54,7 +54,9 @@ function available_courses()
                       WHERE a.course_id IN
                          (
                          SELECT course_id
-                         FROM dln_instr_course)");
+                         FROM dln_instr_course
+                         )
+                      ORDER BY a.course_title");
   while($row = $result->fetchAssoc())
     {
     extract($row);
