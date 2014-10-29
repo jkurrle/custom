@@ -42,7 +42,7 @@ function course_display()
   {
   $content = "";
 
-  $result=db_query("SELECT * FROM `dln_course`");
+  $result=db_query("SELECT * FROM `dln_course` ORDER BY `course_title`");
   //if there's no event data
   if(count($result)==0) 
     $content = "No records available.";
@@ -54,8 +54,23 @@ function course_display()
     while($row = $result -> fetchAssoc())
       {
       extract($row);
-      $dataFields[]=array($course_number,$course_title,$course_id);
+      $dataFields[]=array('course_number'=>$course_number,'course_title'=>$course_title,'course_id'=>$course_id);
       } 
+    foreach ($datafileds as $key => $row)
+      {
+      $crs_title[$key]=$row['course_title'];
+      }
+    $dataFields=array_multisort($crs_title, SORT_ASC, $dataFields);
+
+echo "<br />";
+foreach ($datafileds as $datafield)
+  { 
+  echo "<br />".$datafield['course_title']."<br />";
+  }
+
+echo "<br />";
+
+
 
     //headers for the table
     $headers = array('Module Number','Module Title','Edit?');
