@@ -483,12 +483,12 @@ $calendar .= "
           // if any events fall on this day...
           if(date("j",$eventArray['event_timestamp'])==$calendar_day)
             {
-            if($eventArray['event_location']=='')$eventArray['event_location']=t('Not Applicable');
+            if($eventArray['event_location']=='' || $eventArray['event_location']==NULL) $eventArray['event_location']=t('Not Applicable');
             $res1 = db_query("SELECT loc_id 
                               FROM dln_location 
                               WHERE loc_name=:locID",array(":locID" => $eventArray['event_location']));
-            $rw = $res1->fetchAssoc();
-            extract($rw);
+            if($rw = $res1->fetchAssoc()) extract($rw);
+            else $rw = "Undefined";
             $eventDate=date("j F Y",$eventArray['event_timestamp']);
             $eventTime=date("g:ia",$eventArray['event_timestamp']);
             $groups='';
