@@ -148,12 +148,12 @@ function course_reg_one_form($form, &$form_state)
 
   $optionsArray = array
     (
-    "0" => "EST",
-    "1" => "CST",
-    "2" => "MST",
-    "3" => "PST",
-    "4" => "AKST",
-    "6" => "HST",
+    "5" => "EST",
+    "6" => "CST",
+    "7" => "MST",
+    "8" => "PST",
+    "9" => "AKST",
+    "11" => "HST",
     );
   $form['regBlock1']['timezone'] = array
     (

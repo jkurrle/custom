@@ -48,11 +48,8 @@ function assign_reg_two()
  */
 function course_reg_two_form($form, &$form_state)
   {
-
-
 //echo "<br /><br /><pre>".print_r($_SESSION['classroom'])."</pre><br /><br />";  
 //echo "Course ID is ".$_SESSION['courseID'][0]."<br /><br />";
-
 
   $result = db_query("SELECT course_title FROM dln_course WHERE course_id='".$_SESSION['courseID'][0]."'");
   $row = $result -> fetchAssoc();
@@ -83,6 +80,26 @@ function course_reg_two_form($form, &$form_state)
     '#description' => t('Select which day you\'d like to have your class'),
     '#title' => t('Days Available'),
     );
+  
+  //build variable for mysql statement below
+  $inVar = implode(",",$_SESSION['classroom']['locations']);
+
+  // get hours and time zones of each instructor
+  $result = db_query("
+    SELECT a.instr_id, a.instr_loc, a.start_time_1, a.end_time_1, a.start_time_2, a.end_time_2, a.time_zone
+    FROM dln_instructor a, dln_instr_course b
+    WHERE a.instr_id = b.instr_id
+    AND b.course_id = :courseId
+    AND a.instr_loc IN ($inVar) 
+    ",array(':courseId' => $_SESSION['courseID'][0]));
+  //build an array of times and slots
+  $timeslotArr = array();
+  while($row = $result -> fetchAssoc())
+    {
+    extract($row);
+    //echo "<br /><br />$instr_id $instr_loc $start_time_1 $end_time_1 $start_time_2 $end_time_2 $time_zone <br /><br />";
+    // start determining what time slots are available:
+    }
   
   $optionsArray = array
     (
@@ -162,10 +179,6 @@ function course_reg_two_form_submit($form, &$form_state)
   $row=$result->fetchAssoc();
   extract($row);
 
-  $result = db_query("SELECT max_grade,min_grade FROM dln_grade_range WHERE grade_range_id='$gr'");
-  $row = $result -> fetchAssoc();
-  extract($row);
-
   $details = "";
   $details .= "<p>School: ".$_SESSION['classroom']['school']." </p>";
   $details .= "<p>State: ".$_SESSION['classroom']['state']." </p>";
@@ -186,6 +199,8 @@ function course_reg_two_form_submit($form, &$form_state)
       'slot',
       'approved',
       'timezone',
+      'age_range',
+      'instructor',
       ))
     ->values(array(
       'event_title' => $course_title,
@@ -197,10 +212,12 @@ function course_reg_two_form_submit($form, &$form_state)
       'contact_email' => $_SESSION['classroom']['email'],
       'contact_phone' => $_SESSION['classroom']['phone'],
       'event_duration' => $duration,
-      'webinar' => "From $min_grade to $max_grade",
+      'webinar' => "",
       'slot' => 1,
       'approved' => "N",
       'timezone' => $_SESSION['classroom']['timezone'],
+      'age_range' => "$gr",
+      'instructor' => "",
       ))
     ->execute();
   drupal_set_message("Your course has been requested and it tentatively blocked on the <a href=\"/training-calendar\">Calendar of Events</a>.  Your request will be reviewed and you will be notified whether it is approved or not.");
