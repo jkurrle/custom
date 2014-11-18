@@ -22,12 +22,12 @@ function register_me_block_view($delta="")
   switch ($delta)
     {
     case "register":
-      $block['subject'] = t('Register for this Course');
+      $block['subject'] = t('Schedule this Module');
       $block['content'] = assign_register();
       break;
       
     default:
-      $block['subject'] = t('Register for this Course');
+      $block['subject'] = t('Schedule this Module');
       $block['content'] = assign_register();
       break;
     }// end switch ($delta)
