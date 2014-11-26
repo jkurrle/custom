@@ -7,7 +7,7 @@ function course_reg_two_block_info()
   {
   $blocks['course_reg_two']=array
     (
-    'info' => t('Course Registration Part Two'),
+    'info' => t('Module Scheduling Part Two'),
     'weight' => 1,
     );
   return($blocks); 
@@ -22,12 +22,12 @@ function course_reg_two_block_view($delta="")
   switch ($delta)
     {
     case "reg_two":
-      $block['subject'] = t('Course Registration Part Two');
+      $block['subject'] = t('Module Scheduling Part Two');
       $block['content'] = assign_reg_two();
       break;
       
     default:
-      $block['subject'] = t('Course Registration Part Two');
+      $block['subject'] = t('Module Scheduling Part Two');
       $block['content'] = assign_reg_two();
       break;
     }// end switch ($delta)
